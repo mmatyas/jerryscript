@@ -143,7 +143,7 @@ ecma_builtin_string_prototype_char_at_helper (ecma_value_t this_arg, /**< this a
 
   /* 5 */
   // When index_num is NaN, then the first two comparisons are false
-  if (index_num < 0 || index_num >= len || (ecma_number_is_nan (index_num) && len == 0))
+  if (index_num < 0 || index_num >= len || len == 0)
   {
     ecma_free_value (to_string_val);
     return (charcode_mode ? ecma_make_nan_value ()
