@@ -420,17 +420,17 @@ ecma_op_object_find_own (ecma_value_t base_value, /**< base value */
           return ecma_make_uint32_value (length);
         }
 
-        uint32_t index = ecma_string_get_array_index (property_name_p);
+        const uint32_t index = ecma_string_get_array_index (property_name_p);
 
         if (index != ECMA_STRING_NOT_ARRAY_INDEX)
         {
-          ecma_value_t prim_value_p = ext_object_p->u.class_prop.u.value;
+          const ecma_value_t prim_value_p = ext_object_p->u.class_prop.u.value;
 
-          ecma_string_t *prim_value_str_p = ecma_get_string_from_value (prim_value_p);
+          const ecma_string_t *const prim_value_str_p = ecma_get_string_from_value (prim_value_p);
 
           if (index < ecma_string_get_length (prim_value_str_p))
           {
-            ecma_char_t char_at_idx = ecma_string_get_char_at_pos (prim_value_str_p, index);
+            const ecma_char_t char_at_idx = ecma_string_get_char_at_pos (prim_value_str_p, index);
             return ecma_make_string_value (ecma_new_ecma_string_from_code_unit (char_at_idx));
           }
         }
@@ -619,14 +619,9 @@ ecma_op_object_find (ecma_object_t *object_p, /**< the object */
       return value;
     }
 
-    if (--max_depth == 0)
-    {
-      break;
-    }
-
     object_p = ecma_get_object_prototype (object_p);
   }
-  while (object_p != NULL);
+  while (object_p != NULL && --max_depth > 0);
 
   return ECMA_VALUE_NOT_FOUND;
 } /* ecma_op_object_find */
