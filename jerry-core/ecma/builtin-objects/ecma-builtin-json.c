@@ -925,6 +925,9 @@ static ecma_value_t ecma_builtin_json_str_helper (const ecma_value_t arg1, /**< 
                                                   false);
   JERRY_ASSERT (ecma_is_value_true (put_comp_val));
   ecma_free_value (put_comp_val);
+
+  ecma_string_construct_buffer_initialize_empty (&context.str_buf_p);
+
   ECMA_TRY_CATCH (str_val,
                   ecma_builtin_json_str (empty_str_p, obj_wrapper_p, &context),
                   ret_value);
@@ -1651,18 +1654,19 @@ ecma_builtin_json_object (ecma_object_t *obj_p, /**< the object*/
     /* 10.a */
     if (ecma_string_is_empty (context_p->gap_str_p))
     {
-      ret_value = ecma_builtin_helper_json_create_non_formatted_json (LIT_CHAR_LEFT_BRACE,
-                                                                      LIT_CHAR_RIGHT_BRACE,
-                                                                      partial_p);
+      ecma_builtin_helper_json_create_non_formatted_json (context_p,
+                                                          LIT_CHAR_LEFT_BRACE,
+                                                          LIT_CHAR_RIGHT_BRACE,
+                                                          partial_p);
     }
     /* 10.b */
     else
     {
-      ret_value = ecma_builtin_helper_json_create_formatted_json (LIT_CHAR_LEFT_BRACE,
-                                                                  LIT_CHAR_RIGHT_BRACE,
-                                                                  stepback_p,
-                                                                  partial_p,
-                                                                  context_p);
+      ecma_builtin_helper_json_create_formatted_json (context_p,
+                                                      LIT_CHAR_LEFT_BRACE,
+                                                      LIT_CHAR_RIGHT_BRACE,
+                                                      stepback_p,
+                                                      partial_p);
     }
   }
 
@@ -1769,18 +1773,19 @@ ecma_builtin_json_array (ecma_object_t *obj_p, /**< the array object*/
       /* 10.a */
       if (ecma_string_is_empty (context_p->gap_str_p))
       {
-        ret_value = ecma_builtin_helper_json_create_non_formatted_json (LIT_CHAR_LEFT_SQUARE,
-                                                                        LIT_CHAR_RIGHT_SQUARE,
-                                                                        partial_p);
+        ecma_builtin_helper_json_create_non_formatted_json (context_p,
+                                                            LIT_CHAR_LEFT_SQUARE,
+                                                            LIT_CHAR_RIGHT_SQUARE,
+                                                            partial_p);
       }
       /* 10.b */
       else
       {
-        ret_value = ecma_builtin_helper_json_create_formatted_json (LIT_CHAR_LEFT_SQUARE,
-                                                                    LIT_CHAR_RIGHT_SQUARE,
-                                                                    stepback_p,
-                                                                    partial_p,
-                                                                    context_p);
+        ecma_builtin_helper_json_create_formatted_json (context_p,
+                                                        LIT_CHAR_LEFT_SQUARE,
+                                                        LIT_CHAR_RIGHT_SQUARE,
+                                                        stepback_p,
+                                                        partial_p);
       }
     }
   }
