@@ -855,7 +855,7 @@ ecma_builtin_json_parse (ecma_value_t this_arg, /**< 'this' argument */
                   ecma_op_to_string (arg1),
                   ret_value);
 
-  const ecma_string_t *string_p = ecma_get_string_from_value (string);
+  ecma_string_t *string_p = ecma_get_string_from_value (string);
 
   ECMA_STRING_TO_UTF8_STRING (string_p, str_start_p, string_size);
 
@@ -1276,7 +1276,7 @@ ecma_builtin_json_quote (ecma_string_t *string_p) /**< string that should be quo
 
       lit_utf8_byte_t chars[2] = { LIT_CHAR_BACKSLASH, abbrev };
 
-      product_str_p = ecma_append_chars_to_string (product_str_p, chars, 2, 2);
+      product_str_p = ecma_append_chars_to_string (product_str_p, chars, 2/*, 2*/);
     }
     /* 2.c */
     else if (current_char < LIT_CHAR_SP)
@@ -1292,7 +1292,7 @@ ecma_builtin_json_quote (ecma_string_t *string_p) /**< string that should be quo
 
       chars[5] = (lit_utf8_byte_t) last_char;
 
-      product_str_p = ecma_append_chars_to_string (product_str_p, chars, 6, 6);
+      product_str_p = ecma_append_chars_to_string (product_str_p, chars, 6/*, 6*/);
     }
     /* 2.d */
     else if (current_char < LIT_UTF8_1_BYTE_CODE_POINT_MAX)
@@ -1300,7 +1300,7 @@ ecma_builtin_json_quote (ecma_string_t *string_p) /**< string that should be quo
       /* Fast case for ascii characters. */
       lit_utf8_byte_t chars[1] = { (lit_utf8_byte_t) current_char };
 
-      product_str_p = ecma_append_chars_to_string (product_str_p, chars, 1, 1);
+      product_str_p = ecma_append_chars_to_string (product_str_p, chars, 1/*, 1*/);
     }
     else
     {
