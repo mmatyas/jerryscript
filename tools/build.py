@@ -61,6 +61,10 @@ def get_arguments():
                           help='add custom compile flag')
     buildgrp.add_argument('--debug', action='store_const', const='Debug', dest='build_type',
                           help='debug build')
+    buildgrp.add_argument('--rel', action='store_const', const='Release', dest='build_type',
+                          help='release build')
+    buildgrp.add_argument('--reldeb', action='store_const', const='RelWithDebInfo', dest='build_type',
+                          help='reldeb build')
     buildgrp.add_argument('--install', metavar='DIR', nargs='?', default=None, const=False,
                           help='install after build (default: don\'t install; '
                                'default directory if install: OS-specific)')

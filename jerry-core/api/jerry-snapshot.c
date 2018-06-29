@@ -1531,7 +1531,7 @@ jerry_append_number_to_buffer (uint8_t *buffer_p, /**< buffer */
  *         false - otherwise
  */
 static bool
-ecma_string_is_valid_identifier (const ecma_string_t *string_p)
+ecma_string_is_valid_identifier (ecma_string_t *string_p)
 {
   bool result = false;
 

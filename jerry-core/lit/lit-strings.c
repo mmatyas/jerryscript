@@ -266,6 +266,77 @@ ecma_length_t
 lit_utf8_string_length (const lit_utf8_byte_t *utf8_buf_p, /**< utf-8 string */
                         lit_utf8_size_t utf8_buf_size) /**< string size */
 {
+    const uint8_t *p;
+    const uint8_t *p_end;
+    const uint32_t *p32_end;
+    const uint32_t *p32;
+    lit_utf8_size_t ncont;
+    ecma_length_t clen;
+
+    ncont = 0;  /* number of continuation (non-initial) bytes in [0x80,0xbf] */
+    p = utf8_buf_p;
+    p_end = utf8_buf_p + utf8_buf_size;
+    if (utf8_buf_size < 16) {
+            goto skip_fastpath;
+    }
+
+    /* Align 'p' to 4; the input data may have arbitrary alignment.
+     * End of string check not needed because blen >= 16.
+     */
+    while (((size_t) (const void *) p) & 0x03U) {
+            uint8_t x;
+            x = *p++;
+            if (JERRY_UNLIKELY(x >= 0x80 && x <= 0xbf)) {
+                    ncont++;
+            }
+    }
+
+    /* Full, aligned 4-byte reads. */
+    p32_end = (const uint32_t *) (const void *) (p + ((size_t) (p_end - p) & (size_t) (~0x03)));
+    p32 = (const uint32_t *) (const void *) p;
+    while (p32 != (const uint32_t *) p32_end) {
+            uint32_t x;
+            x = *p32++;
+            if (JERRY_LIKELY((x & 0x80808080UL) == 0)) {
+                    ;  /* ASCII fast path */
+            } else {
+                    /* Flip highest bit of each byte which changes
+                     * the bit pattern 10xxxxxx into 00xxxxxx which
+                     * allows an easy bit mask test.
+                     */
+                    x ^= 0x80808080UL;
+                    if (JERRY_UNLIKELY(!(x & 0xc0000000UL))) {
+                            ncont++;
+                    }
+                    if (JERRY_UNLIKELY(!(x & 0x00c00000UL))) {
+                            ncont++;
+                    }
+                    if (JERRY_UNLIKELY(!(x & 0x0000c000UL))) {
+                            ncont++;
+                    }
+                    if (JERRY_UNLIKELY(!(x & 0x000000c0UL))) {
+                            ncont++;
+                    }
+            }
+    }
+    p = (const uint8_t *) p32;
+    /* Fall through to handle the rest. */
+
+skip_fastpath:
+    while (p != p_end) {
+            uint8_t x;
+            x = *p++;
+            if (JERRY_UNLIKELY(x >= 0x80 && x <= 0xbf)) {
+                    ncont++;
+            }
+    }
+
+    JERRY_ASSERT(ncont <= utf8_buf_size);
+    clen = utf8_buf_size - ncont;
+    JERRY_ASSERT(clen <= utf8_buf_size);
+    return clen;
+
+/*
   ecma_length_t length = 0;
   lit_utf8_size_t size = 0;
 
@@ -277,7 +348,7 @@ lit_utf8_string_length (const lit_utf8_byte_t *utf8_buf_p, /**< utf-8 string */
 
   JERRY_ASSERT (size == utf8_buf_size);
 
-  return length;
+  return length;*/
 } /* lit_utf8_string_length */
 
 /**

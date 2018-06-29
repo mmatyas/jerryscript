@@ -246,7 +246,8 @@ ecma_new_ecma_string_from_utf8 (const lit_utf8_byte_t *string_p, /**< utf-8 stri
     data_p = (lit_utf8_byte_t *) (long_string_desc_p + 1);
   }
 
-  string_desc_p->hash = lit_utf8_string_calc_hash (string_p, string_size);
+  // string_desc_p->hash = lit_utf8_string_calc_hash (string_p, string_size);
+  string_desc_p->hash = 0;
   memcpy (data_p, string_p, string_size);
   return string_desc_p;
 } /* ecma_new_ecma_string_from_utf8 */
@@ -307,7 +308,7 @@ ecma_new_ecma_string_from_utf8_converted_to_cesu8 (const lit_utf8_byte_t *string
 
     JERRY_ASSERT (lit_is_valid_utf8_string (string_p, string_size));
 
-    lit_utf8_byte_t *data_p;
+    //lit_utf8_byte_t *data_p;
 
     if (JERRY_LIKELY (converted_string_size <= UINT16_MAX))
     {
@@ -319,7 +320,7 @@ ecma_new_ecma_string_from_utf8_converted_to_cesu8 (const lit_utf8_byte_t *string
       // string_desc_p->u.utf8_string.length = (uint16_t) converted_string_length;
       string_desc_p->u.utf8_string.length = 0;
 
-      data_p = (lit_utf8_byte_t *) (string_desc_p + 1);
+      //data_p = (lit_utf8_byte_t *) (string_desc_p + 1);
     }
     else
     {
@@ -333,18 +334,18 @@ ecma_new_ecma_string_from_utf8_converted_to_cesu8 (const lit_utf8_byte_t *string
       // long_string_desc_p->long_utf8_string_length = converted_string_length;
       long_string_desc_p->long_utf8_string_length = 0;
 
-      data_p = (lit_utf8_byte_t *) (long_string_desc_p + 1);
+      //data_p = (lit_utf8_byte_t *) (long_string_desc_p + 1);
     }
 
-    const lit_utf8_byte_t *const begin_data_p = data_p;
-    pos = 0;
+    //const lit_utf8_byte_t *const begin_data_p = data_p;
+    /*pos = 0;
 
     while (pos < string_size)
     {
       if ((string_p[pos] & LIT_UTF8_4_BYTE_MASK) == LIT_UTF8_4_BYTE_MARKER)
-      {
+      {*/
         /* Processing 4 byte unicode sequence. Always converted to two 3 byte long sequence. */
-        uint32_t character = ((((uint32_t) string_p[pos++]) & 0x7) << 18);
+        /*uint32_t character = ((((uint32_t) string_p[pos++]) & 0x7) << 18);
         character |= ((((uint32_t) string_p[pos++]) & LIT_UTF8_LAST_6_BITS_MASK) << 12);
         character |= ((((uint32_t) string_p[pos++]) & LIT_UTF8_LAST_6_BITS_MASK) << 6);
         character |= (((uint32_t) string_p[pos++]) & LIT_UTF8_LAST_6_BITS_MASK);
@@ -361,9 +362,10 @@ ecma_new_ecma_string_from_utf8_converted_to_cesu8 (const lit_utf8_byte_t *string
       }
     }
 
-    JERRY_ASSERT (pos == string_size);
+    JERRY_ASSERT (pos == string_size);*/
 
-    string_desc_p->hash = lit_utf8_string_calc_hash (begin_data_p, converted_string_size);
+    //string_desc_p->hash = lit_utf8_string_calc_hash (begin_data_p, converted_string_size);
+    string_desc_p->hash = 0;
   }
 
   return string_desc_p;
@@ -459,7 +461,8 @@ ecma_new_ecma_string_from_number (ecma_number_t num) /**< ecma-number */
   ecma_string_t *string_desc_p = ecma_alloc_string_buffer (sizeof (ecma_string_t) + str_size);
 
   string_desc_p->refs_and_container = ECMA_STRING_CONTAINER_HEAP_UTF8_STRING | ECMA_STRING_REF_ONE;
-  string_desc_p->hash = lit_utf8_string_calc_hash (str_buf, str_size);
+  //string_desc_p->hash = lit_utf8_string_calc_hash (str_buf, str_size);
+  string_desc_p->hash = 0;
   string_desc_p->u.common_uint32_field = 0;
   string_desc_p->u.utf8_string.size = (uint16_t) str_size;
   string_desc_p->u.utf8_string.length = (uint16_t) str_size;
@@ -537,11 +540,16 @@ ecma_append_chars_to_string (ecma_string_t *string1_p, /**< base ecma-string */
   lit_utf8_byte_t uint32_to_string_buffer[ECMA_MAX_CHARS_IN_STRINGIFIED_UINT32];
 
   bool string1_is_uint32 = false;
-  bool string1_rehash_needed = false;
-
-  if (ECMA_IS_DIRECT_STRING (string1_p))
+  //bool string1_rehash_needed = false;
+  /*
+  if (!string1_p->hash)
   {
     string1_rehash_needed = true;
+  }
+*/
+  if (ECMA_IS_DIRECT_STRING (string1_p))
+  {
+    //string1_rehash_needed = true;
 
     switch (ECMA_GET_DIRECT_STRING_TYPE (string1_p))
     {
@@ -605,7 +613,7 @@ ecma_append_chars_to_string (ecma_string_t *string1_p, /**< base ecma-string */
         cesu8_string1_p = uint32_to_string_buffer;
         // cesu8_string1_length = cesu8_string1_size;
         string1_is_uint32 = true;
-        string1_rehash_needed = true;
+        //string1_rehash_needed = true;
         break;
       }
       default:
@@ -615,7 +623,7 @@ ecma_append_chars_to_string (ecma_string_t *string1_p, /**< base ecma-string */
         cesu8_string1_p = lit_get_magic_string_ex_utf8 (string1_p->u.magic_string_ex_id);
         cesu8_string1_size = lit_get_magic_string_ex_size (string1_p->u.magic_string_ex_id);
         // cesu8_string1_length = lit_utf8_string_length (cesu8_string1_p, cesu8_string1_size);
-        string1_rehash_needed = true;
+        //string1_rehash_needed = true;
         break;
       }
     }
@@ -704,7 +712,7 @@ ecma_append_chars_to_string (ecma_string_t *string1_p, /**< base ecma-string */
     data_p = (lit_utf8_byte_t *) (long_string_desc_p + 1);
   }
 
-  lit_string_hash_t hash_start;
+  /*lit_string_hash_t hash_start;
 
   if (string1_rehash_needed)
   {
@@ -716,7 +724,8 @@ ecma_append_chars_to_string (ecma_string_t *string1_p, /**< base ecma-string */
     hash_start = string1_p->hash;
   }
 
-  string_desc_p->hash = lit_utf8_string_hash_combine (hash_start, cesu8_string2_p, cesu8_string2_size);
+  string_desc_p->hash = lit_utf8_string_hash_combine (hash_start, cesu8_string2_p, cesu8_string2_size);*/
+  string_desc_p->hash = 0;
 
   memcpy (data_p, cesu8_string1_p, cesu8_string1_size);
   memcpy (data_p + cesu8_string1_size, cesu8_string2_p, cesu8_string2_size);
@@ -1645,6 +1654,19 @@ ecma_string_get_property_name_hash (ecma_property_t property, /**< property name
     case ECMA_DIRECT_STRING_PTR:
     {
       ecma_string_t *prop_name_p = ECMA_GET_NON_NULL_POINTER (ecma_string_t, prop_name_cp);
+      if (!prop_name_p->hash)
+      {
+        lit_utf8_size_t size;
+        if (prop_name_p->refs_and_container & ECMA_STRING_CONTAINER_HEAP_LONG_UTF8_STRING)
+        {
+          size = prop_name_p->u.long_utf8_string_size;
+        }
+        else
+        {
+          size = prop_name_p->u.utf8_string.size;
+        }
+        prop_name_p->hash = lit_utf8_string_calc_hash ((lit_utf8_byte_t *) (prop_name_p + 1), size);
+      }
       return prop_name_p->hash;
     }
     case ECMA_DIRECT_STRING_MAGIC_EX:
@@ -1761,8 +1783,8 @@ ecma_compare_ecma_strings_longpath (const ecma_string_t *string1_p, /**< ecma-st
  *         false - otherwise
  */
 inline bool JERRY_ATTR_ALWAYS_INLINE
-ecma_compare_ecma_strings (const ecma_string_t *string1_p, /**< ecma-string */
-                           const ecma_string_t *string2_p) /**< ecma-string */
+ecma_compare_ecma_strings (ecma_string_t *string1_p, /**< ecma-string */
+                           ecma_string_t *string2_p) /**< ecma-string */
 {
   JERRY_ASSERT (string1_p != NULL && string2_p != NULL);
 
@@ -1778,6 +1800,32 @@ ecma_compare_ecma_strings (const ecma_string_t *string1_p, /**< ecma-string */
     return false;
   }
 
+  if (!string1_p->hash)
+  {
+      lit_utf8_size_t size;
+      if (string1_p->refs_and_container & ECMA_STRING_CONTAINER_HEAP_LONG_UTF8_STRING)
+      {
+        size = string1_p->u.long_utf8_string_size;
+      }
+      else
+      {
+        size = string1_p->u.utf8_string.size;
+      }
+    string1_p->hash = lit_utf8_string_calc_hash ((lit_utf8_byte_t *) (string1_p + 1), size);
+  }
+  if (!string2_p->hash)
+  {
+      lit_utf8_size_t size;
+      if (string1_p->refs_and_container & ECMA_STRING_CONTAINER_HEAP_LONG_UTF8_STRING)
+      {
+        size = string1_p->u.long_utf8_string_size;
+      }
+      else
+      {
+        size = string1_p->u.utf8_string.size;
+      }
+    string2_p->hash = lit_utf8_string_calc_hash ((lit_utf8_byte_t *) (string2_p + 1), size);
+  }
   if (string1_p->hash != string2_p->hash)
   {
     return false;
@@ -1848,8 +1896,8 @@ ecma_compare_ecma_non_direct_strings (const ecma_string_t *string1_p, /**< ecma-
  *         false - otherwise
  */
 bool
-ecma_compare_ecma_strings_relational (const ecma_string_t *string1_p, /**< ecma-string */
-                                      const ecma_string_t *string2_p) /**< ecma-string */
+ecma_compare_ecma_strings_relational (ecma_string_t *string1_p, /**< ecma-string */
+                                      ecma_string_t *string2_p) /**< ecma-string */
 {
   if (ecma_compare_ecma_strings (string1_p,
                                  string2_p))
@@ -2484,7 +2532,7 @@ ecma_string_construct_buffer_finalize (ecma_string_construct_buffer_t *strbuf_p)
     string_desc_p->u.utf8_string.size = (uint16_t) string_size;
     // string_desc_p->u.utf8_string.length = (uint16_t) lit_utf8_string_length (string_p, string_size);
     string_desc_p->u.utf8_string.length = 0;
-    string_desc_p->hash = lit_utf8_string_calc_hash(string_p, string_size);
+    //string_desc_p->hash = lit_utf8_string_calc_hash(string_p, string_size);
 
     ret_p = string_desc_p;
   }
