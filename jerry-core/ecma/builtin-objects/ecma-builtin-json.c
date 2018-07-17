@@ -1688,11 +1688,11 @@ ecma_builtin_json_object (ecma_object_t *obj_p, /**< the object*/
     /* 10.b */
     else
     {
-      ret_value = ecma_builtin_helper_json_create_formatted_json (LIT_CHAR_LEFT_BRACE,
+      ret_value = ecma_builtin_helper_json_create_formatted_json (context_p,
+                                                                  LIT_CHAR_LEFT_BRACE,
                                                                   LIT_CHAR_RIGHT_BRACE,
                                                                   stepback_p,
-                                                                  partial_p,
-                                                                  context_p);
+                                                                  partial_p);
     }
   }
 
@@ -1806,11 +1806,11 @@ ecma_builtin_json_array (ecma_object_t *obj_p, /**< the array object*/
       /* 10.b */
       else
       {
-        ret_value = ecma_builtin_helper_json_create_formatted_json (LIT_CHAR_LEFT_SQUARE,
+        ret_value = ecma_builtin_helper_json_create_formatted_json (context_p,
+                                                                    LIT_CHAR_LEFT_SQUARE,
                                                                     LIT_CHAR_RIGHT_SQUARE,
                                                                     stepback_p,
-                                                                    partial_p,
-                                                                    context_p);
+                                                                    partial_p);
       }
     }
   }
