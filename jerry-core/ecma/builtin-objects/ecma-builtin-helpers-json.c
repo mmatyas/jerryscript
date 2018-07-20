@@ -101,7 +101,7 @@ ecma_has_string_value_in_collection (ecma_collection_header_t *collection_p, /**
  *         Returned value must be freed with ecma_deref_ecma_string.
  */
 ecma_string_t *
-ecma_builtin_helper_json_create_separated_properties (ecma_collection_header_t *partial_p, /**< key-value pairs*/
+ecma_builtin_helper_json_create_separated_properties_v1 (ecma_collection_header_t *partial_p, /**< key-value pairs*/
                                                       ecma_string_t *separator_p) /**< separator*/
 {
   ecma_string_t *properties_str_p = ecma_get_magic_string (LIT_MAGIC_STRING__EMPTY);
@@ -129,7 +129,7 @@ ecma_builtin_helper_json_create_separated_properties (ecma_collection_header_t *
 
 
 void
-ecma_builtin_helper_json_create_separated_properties_v2 (ecma_json_stringify_context_t *context_p,
+ecma_builtin_helper_json_create_separated_properties (ecma_json_stringify_context_t *context_p,
                                                       ecma_collection_header_t *partial_p, /**< key-value pairs*/
                                                       ecma_string_t *separator_p) /**< separator*/
 {
@@ -197,13 +197,12 @@ ecma_builtin_helper_json_create_formatted_json (ecma_json_stringify_context_t *c
   chars[0] = left_bracket;
 
   ecma_string_t *substr_p = ecma_new_ecma_string_from_utf8 (chars, 2);
-  ecma_string_construct_buffer_initialize_empty (&context_p->str_buf_p);
-  ecma_string_construct_buffer_append (&context_p->str_buf_p, substr_p);
+  ecma_string_construct_buffer_initialize (&context_p->str_buf_p, substr_p);
   ecma_string_construct_buffer_append (&context_p->str_buf_p, context_p->indent_str_p);
   ecma_deref_ecma_string (substr_p);
 
   /* 10.b.ii */
-  ecma_builtin_helper_json_create_separated_properties_v2 (context_p, partial_p, separator_p);
+  ecma_builtin_helper_json_create_separated_properties (context_p, partial_p, separator_p);
   ecma_deref_ecma_string (separator_p);
 
   substr_p = ecma_new_ecma_string_from_code_unit (LIT_CHAR_LF);
@@ -217,8 +216,8 @@ ecma_builtin_helper_json_create_formatted_json (ecma_json_stringify_context_t *c
   ecma_string_construct_buffer_append (&context_p->str_buf_p, substr_p);
   ecma_deref_ecma_string (substr_p);
 
-  ecma_string_t *ret_value = ecma_string_construct_buffer_finalize (&context_p->str_buf_p);
-  return ecma_make_string_value (ret_value);
+  ecma_string_t *result = ecma_string_construct_buffer_finalize (&context_p->str_buf_p);
+  return ecma_make_string_value (result);
 } /* ecma_builtin_helper_json_create_formatted_json */
 
 
@@ -236,7 +235,40 @@ ecma_builtin_helper_json_create_formatted_json (ecma_json_stringify_context_t *c
  *         Returned value must be freed with ecma_free_value.
  */
 ecma_value_t
-ecma_builtin_helper_json_create_non_formatted_json (lit_utf8_byte_t left_bracket, /**< left bracket character */
+ecma_builtin_helper_json_create_non_formatted_json (ecma_json_stringify_context_t *context_p, /**< context*/
+                                                    lit_utf8_byte_t left_bracket, /**< left bracket character */
+                                                    lit_utf8_byte_t right_bracket, /**< right bracket character */
+                                                    ecma_collection_header_t *partial_p) /**< key-value pairs */
+{
+  JERRY_ASSERT (left_bracket < LIT_UTF8_1_BYTE_CODE_POINT_MAX
+                && right_bracket < LIT_UTF8_1_BYTE_CODE_POINT_MAX);
+
+  printf("ecma_builtin_helper_json_create_non_formatted_json_v2\n");
+  ecma_string_t *comma_str_p = ecma_get_magic_string (LIT_MAGIC_STRING_COMMA_CHAR);
+
+  /* 10.a.ii */
+  ecma_string_t *left_bracket_p = ecma_new_ecma_string_from_code_unit (left_bracket);
+  ecma_string_construct_buffer_initialize (&context_p->str_buf_p, left_bracket_p);
+  ecma_deref_ecma_string (left_bracket_p);
+  printf("  {: %p, %d\n", left_bracket_p, left_bracket_p->refs_and_container >> 3);
+
+  /* 10.a.i */
+  ecma_builtin_helper_json_create_separated_properties (context_p, partial_p, comma_str_p);
+  ecma_deref_ecma_string (comma_str_p);
+  printf(  ",: %p\n", comma_str_p);
+
+  ecma_string_t *right_bracket_p = ecma_new_ecma_string_from_code_unit (right_bracket);
+  ecma_string_construct_buffer_append (&context_p->str_buf_p, right_bracket_p);
+  ecma_deref_ecma_string (right_bracket_p);
+  printf("  }: %p, %d\n", right_bracket_p, right_bracket_p->refs_and_container >> 3);
+
+  ecma_string_t *result = ecma_string_construct_buffer_finalize (&context_p->str_buf_p);
+  printf("END ecma_builtin_helper_json_create_non_formatted_json_v2\n");
+  return ecma_make_string_value (result);
+} /* ecma_builtin_helper_json_create_non_formatted_json */
+
+ecma_value_t
+ecma_builtin_helper_json_create_non_formatted_json_v1 (lit_utf8_byte_t left_bracket, /**< left bracket character */
                                                     lit_utf8_byte_t right_bracket, /**< right bracket character */
                                                     ecma_collection_header_t *partial_p) /**< key-value pairs */
 {
@@ -248,7 +280,7 @@ ecma_builtin_helper_json_create_non_formatted_json (lit_utf8_byte_t left_bracket
   ecma_string_t *properties_str_p;
 
   /* 10.a.i */
-  properties_str_p = ecma_builtin_helper_json_create_separated_properties (partial_p, comma_str_p);
+  properties_str_p = ecma_builtin_helper_json_create_separated_properties_v1 (partial_p, comma_str_p);
 
   /* 10.a.ii */
   ecma_string_t *result_str_p = ecma_new_ecma_string_from_code_unit (left_bracket);
@@ -262,6 +294,7 @@ ecma_builtin_helper_json_create_non_formatted_json (lit_utf8_byte_t left_bracket
 
   return ecma_make_string_value (result_str_p);
 } /* ecma_builtin_helper_json_create_non_formatted_json */
+
 
 #endif /* !CONFIG_DISABLE_JSON_BUILTIN */
 
