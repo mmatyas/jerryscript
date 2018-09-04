@@ -926,10 +926,7 @@ static ecma_value_t ecma_builtin_json_str_helper (const ecma_value_t arg1, /**< 
   JERRY_ASSERT (ecma_is_value_true (put_comp_val));
   ecma_free_value (put_comp_val);
 
-  printf("ecma_string_construct_buffer_initialize_empty {\n");
   ecma_string_construct_buffer_initialize_empty (&context.str_buf_p);
-  printf("}\n");
-
 
   ret_value = ecma_builtin_json_str (empty_str_p, obj_wrapper_p, &context);
   if (ECMA_IS_VALUE_ERROR (ret_value) || ecma_is_value_undefined(ret_value))
@@ -944,54 +941,15 @@ static ecma_value_t ecma_builtin_json_str_helper (const ecma_value_t arg1, /**< 
     lit_utf8_byte_t buffer[size];
     size = ecma_string_copy_to_cesu8_buffer (str, buffer, size);
     buffer[size] = '\0';
-    printf("\nfinalized: `%s`\n\n", buffer);
-
+    printf("finalized: `%s`\n", buffer);
 
     ret_value = ecma_make_string_value (str);
   }
-
-
-
-
-  /*ECMA_TRY_CATCH (str_val,
-                  ecma_builtin_json_str (empty_str_p, obj_wrapper_p, &context),
-                  ret_value);
-  printf("TRYCATCH IN\n");
-  if (ecma_is_value_empty (ret_value) && ecma_is_value_empty (str_val)) {
-      const ecma_string_t* str = ecma_string_construct_buffer_finalize (&context.str_buf_p);
-      context.str_buf_p.buffer_p = NULL;
-
-          lit_utf8_size_t size = ecma_string_get_size ((str));
-          lit_utf8_byte_t buffer[size];
-          size = ecma_string_copy_to_cesu8_buffer (str, buffer, size);
-          buffer[size] = '\0';
-          printf("\nfinalized: `%s`\n\n", buffer);
-
-
-
-      ret_value = ecma_make_string_value (str);
-      //printf("#  %s", str + 1);
-
-  }
-  else {
-      printf("copyval\n");
-      ret_value = ecma_copy_value (str_val);
-      //printf("ecma_string_construct_buffer_destroy\n");
-      ecma_string_construct_buffer_destroy (&context.str_buf_p);
-  }
-  ECMA_FINALIZE (str_val);
-  printf("TRYCATCH OUT\n");*/
-
-  //printf("}\n");
-  /*if (context.str_buf_p.buffer_p) {
-      printf("ecma_string_construct_buffer_destroy\n");
-  }*/
 
   ecma_free_value (put_comp_val);
   ecma_deref_ecma_string (empty_str_p);
   ecma_deref_object (obj_wrapper_p);
 
-  printf("ecma_builtin_json_str_helper end\n");
   return ret_value;
 } /* ecma_builtin_json_str_helper */
 
@@ -1272,7 +1230,6 @@ static void
 ecma_builtin_json_quote (ecma_json_stringify_context_t *context_p, /**< context*/
                          ecma_string_t *string_p) /**< string that should be quoted*/
 {
-    printf("> ecma_builtin_json_quote\n");
   ECMA_STRING_TO_UTF8_STRING (string_p, string_buff, string_buff_size);
   const lit_utf8_byte_t *str_p = string_buff;
   const lit_utf8_byte_t *str_end_p = str_p + string_buff_size;
@@ -1402,19 +1359,10 @@ ecma_builtin_json_quote (ecma_json_stringify_context_t *context_p, /**< context*
   ecma_string_t *product_str_p = ecma_new_ecma_string_from_utf8 ((const lit_utf8_byte_t *) buf_begin,
                                                                  (lit_utf8_size_t) (buf - buf_begin));
   ecma_string_construct_buffer_append (&context_p->str_buf_p, product_str_p);
+  ecma_deref_ecma_string(product_str_p);
 
   jmem_heap_free_block (buf_begin, n_bytes);
   ECMA_FINALIZE_UTF8_STRING (string_buff, string_buff_size);
-
-
-      lit_utf8_size_t xx_size = ecma_string_get_size ((product_str_p));
-      lit_utf8_byte_t xx_buffer[xx_size + 1];
-      xx_size = ecma_string_copy_to_cesu8_buffer ((product_str_p), xx_buffer, xx_size);
-      xx_buffer[xx_size] = '\0';
-      printf("quote result: %s\n", xx_buffer);
-
-
-  //return ecma_make_string_value (product_str_p);
 } /* ecma_builtin_json_quote */
 
 /**
@@ -1536,49 +1484,38 @@ ecma_builtin_json_str (ecma_string_t *key_p, /**< property key*/
     /* 5. - 7. */
     if (ecma_is_value_null (my_val) || ecma_is_value_boolean (my_val))
     {
-        printf("    5-7\n");
       ecma_value_t op_as_value = ecma_op_to_string (my_val);
       JERRY_ASSERT (!ECMA_IS_VALUE_ERROR (op_as_value));
 
       ecma_string_t *op_as_string = ecma_get_string_from_value (op_as_value);
       ecma_string_construct_buffer_append (&context_p->str_buf_p, op_as_string);
+      ecma_deref_ecma_string (op_as_string);
     }
     /* 8. */
     else if (ecma_is_value_string (my_val))
     {
-        printf("    8\n");
       ecma_string_t *value_str_p = ecma_get_string_from_value (my_val);
       ecma_builtin_json_quote (context_p, value_str_p);
     }
     /* 9. */
     else if (ecma_is_value_number (my_val))
     {
-        printf("    9\n");
       ecma_number_t num_value_p = ecma_get_number_from_value (my_val);
 
       /* 9.a */
       if (!ecma_number_is_nan (num_value_p) && !ecma_number_is_infinity (num_value_p))
       {
-          ecma_value_t number_as_value = ecma_op_to_string (my_val);
-          JERRY_ASSERT (!ECMA_IS_VALUE_ERROR (number_as_value));
-        //ret_value = ecma_op_to_string (my_val);
-        //JERRY_ASSERT (!ECMA_IS_VALUE_ERROR (ret_value));
+        ecma_value_t number_as_value = ecma_op_to_string (my_val);
+        JERRY_ASSERT (!ECMA_IS_VALUE_ERROR (number_as_value));
 
         ecma_string_t *number_as_string = ecma_get_string_from_value (number_as_value);
         ecma_string_construct_buffer_append (&context_p->str_buf_p, number_as_string);
-
-                lit_utf8_size_t size = ecma_string_get_size ((number_as_string));
-                lit_utf8_byte_t buffer[size];
-                size = ecma_string_copy_to_cesu8_buffer (number_as_string, buffer, size);
-                buffer[size] = '\0';
-                printf("number: `%s`\n", buffer);
+        ecma_deref_ecma_string(number_as_string);
       }
       else
       {
         /* 9.b */
-        ecma_value_t null_value = ecma_make_magic_string_value (LIT_MAGIC_STRING_NULL);
-        ecma_string_t *null_string = ecma_get_string_from_value (null_value);
-        ecma_string_construct_buffer_append (&context_p->str_buf_p, null_string);
+        ecma_string_construct_buffer_append (&context_p->str_buf_p, ecma_get_magic_string (LIT_MAGIC_STRING_NULL));
       }
     }
     /* 10. */
@@ -1590,33 +1527,16 @@ ecma_builtin_json_str (ecma_string_t *key_p, /**< property key*/
       /* 10.a */
       if (class_name == LIT_MAGIC_STRING_ARRAY_UL)
       {
-          printf("    10a (array)\n");
-        /*ECMA_TRY_CATCH (val,
-                        ecma_builtin_json_array (obj_p, context_p),
-                        ret_value);
-
-        ret_value = ecma_copy_value (val);
-
-        ECMA_FINALIZE (val);*/
-          ret_value = ecma_builtin_json_array (obj_p, context_p);
+        ret_value = ecma_builtin_json_array (obj_p, context_p);
       }
       /* 10.b */
       else
       {
-          printf("    10b (object)\n");
-        /*ECMA_TRY_CATCH (val,
-                        ecma_builtin_json_object (obj_p, context_p),
-                        ret_value);
-
-        ret_value = ecma_copy_value (val);
-
-        ECMA_FINALIZE (val);*/
-          ret_value = ecma_builtin_json_object (obj_p, context_p);
+        ret_value = ecma_builtin_json_object (obj_p, context_p);
       }
     }
     else
     {
-        printf("    11\n");
       /* 11. */
       ret_value = ECMA_VALUE_UNDEFINED;
     }
