@@ -167,11 +167,11 @@ void
 ecma_builtin_helper_json_create_separated_properties (ecma_json_stringify_context_t *context_p,
                                                       ecma_collection_header_t *partial_p,
                                                       ecma_string_t *separator_p);
-ecma_value_t
+void
 ecma_builtin_helper_json_create_formatted_json (ecma_json_stringify_context_t *context_p,
                                                 lit_utf8_byte_t left_bracket, lit_utf8_byte_t right_bracket,
                                                 ecma_string_t *stepback_p, ecma_collection_header_t *partial_p);
-ecma_value_t
+void
 ecma_builtin_helper_json_create_non_formatted_json (ecma_json_stringify_context_t *context_p,
                                                     lit_utf8_byte_t left_bracket, lit_utf8_byte_t right_bracket,
                                                     ecma_collection_header_t *partial_p);

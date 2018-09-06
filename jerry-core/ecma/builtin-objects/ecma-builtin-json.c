@@ -925,15 +925,73 @@ static ecma_value_t ecma_builtin_json_str_helper (const ecma_value_t arg1, /**< 
                                                   false);
   JERRY_ASSERT (ecma_is_value_true (put_comp_val));
   ecma_free_value (put_comp_val);
-  ECMA_TRY_CATCH (str_val,
+
+  printf("ecma_string_construct_buffer_initialize_empty {\n");
+  ecma_string_construct_buffer_initialize_empty (&context.str_buf_p);
+  printf("}\n");
+
+
+  ret_value = ecma_builtin_json_str (empty_str_p, obj_wrapper_p, &context);
+  if (ECMA_IS_VALUE_ERROR (ret_value) || ecma_is_value_undefined(ret_value))
+  {
+    ecma_string_construct_buffer_destroy (&context.str_buf_p);
+  }
+  else
+  {
+    const ecma_string_t* str = ecma_string_construct_buffer_finalize (&context.str_buf_p);
+
+    lit_utf8_size_t size = ecma_string_get_size ((str));
+    lit_utf8_byte_t buffer[size];
+    size = ecma_string_copy_to_cesu8_buffer (str, buffer, size);
+    buffer[size] = '\0';
+    printf("\nfinalized: `%s`\n\n", buffer);
+
+
+    ret_value = ecma_make_string_value (str);
+  }
+
+
+
+
+  /*ECMA_TRY_CATCH (str_val,
                   ecma_builtin_json_str (empty_str_p, obj_wrapper_p, &context),
                   ret_value);
-  ret_value = ecma_copy_value (str_val);
+  printf("TRYCATCH IN\n");
+  if (ecma_is_value_empty (ret_value) && ecma_is_value_empty (str_val)) {
+      const ecma_string_t* str = ecma_string_construct_buffer_finalize (&context.str_buf_p);
+      context.str_buf_p.buffer_p = NULL;
+
+          lit_utf8_size_t size = ecma_string_get_size ((str));
+          lit_utf8_byte_t buffer[size];
+          size = ecma_string_copy_to_cesu8_buffer (str, buffer, size);
+          buffer[size] = '\0';
+          printf("\nfinalized: `%s`\n\n", buffer);
+
+
+
+      ret_value = ecma_make_string_value (str);
+      //printf("#  %s", str + 1);
+
+  }
+  else {
+      printf("copyval\n");
+      ret_value = ecma_copy_value (str_val);
+      //printf("ecma_string_construct_buffer_destroy\n");
+      ecma_string_construct_buffer_destroy (&context.str_buf_p);
+  }
   ECMA_FINALIZE (str_val);
+  printf("TRYCATCH OUT\n");*/
+
+  //printf("}\n");
+  /*if (context.str_buf_p.buffer_p) {
+      printf("ecma_string_construct_buffer_destroy\n");
+  }*/
+
   ecma_free_value (put_comp_val);
   ecma_deref_ecma_string (empty_str_p);
   ecma_deref_object (obj_wrapper_p);
 
+  printf("ecma_builtin_json_str_helper end\n");
   return ret_value;
 } /* ecma_builtin_json_str_helper */
 
@@ -1210,9 +1268,11 @@ ecma_builtin_json_stringify (ecma_value_t this_arg, /**< 'this' argument */
  * @return ecma value
  *         Returned value must be freed with ecma_free_value.
  */
-static ecma_value_t
-ecma_builtin_json_quote (ecma_string_t *string_p) /**< string that should be quoted*/
+static void
+ecma_builtin_json_quote (ecma_json_stringify_context_t *context_p, /**< context*/
+                         ecma_string_t *string_p) /**< string that should be quoted*/
 {
+    printf("> ecma_builtin_json_quote\n");
   ECMA_STRING_TO_UTF8_STRING (string_p, string_buff, string_buff_size);
   const lit_utf8_byte_t *str_p = string_buff;
   const lit_utf8_byte_t *str_end_p = str_p + string_buff_size;
@@ -1341,10 +1401,20 @@ ecma_builtin_json_quote (ecma_string_t *string_p) /**< string that should be quo
 
   ecma_string_t *product_str_p = ecma_new_ecma_string_from_utf8 ((const lit_utf8_byte_t *) buf_begin,
                                                                  (lit_utf8_size_t) (buf - buf_begin));
+  ecma_string_construct_buffer_append (&context_p->str_buf_p, product_str_p);
+
   jmem_heap_free_block (buf_begin, n_bytes);
   ECMA_FINALIZE_UTF8_STRING (string_buff, string_buff_size);
 
-  return ecma_make_string_value (product_str_p);
+
+      lit_utf8_size_t xx_size = ecma_string_get_size ((product_str_p));
+      lit_utf8_byte_t xx_buffer[xx_size + 1];
+      xx_size = ecma_string_copy_to_cesu8_buffer ((product_str_p), xx_buffer, xx_size);
+      xx_buffer[xx_size] = '\0';
+      printf("quote result: %s\n", xx_buffer);
+
+
+  //return ecma_make_string_value (product_str_p);
 } /* ecma_builtin_json_quote */
 
 /**
@@ -1466,30 +1536,49 @@ ecma_builtin_json_str (ecma_string_t *key_p, /**< property key*/
     /* 5. - 7. */
     if (ecma_is_value_null (my_val) || ecma_is_value_boolean (my_val))
     {
-      ret_value = ecma_op_to_string (my_val);
-      JERRY_ASSERT (!ECMA_IS_VALUE_ERROR (ret_value));
+        printf("    5-7\n");
+      ecma_value_t op_as_value = ecma_op_to_string (my_val);
+      JERRY_ASSERT (!ECMA_IS_VALUE_ERROR (op_as_value));
+
+      ecma_string_t *op_as_string = ecma_get_string_from_value (op_as_value);
+      ecma_string_construct_buffer_append (&context_p->str_buf_p, op_as_string);
     }
     /* 8. */
     else if (ecma_is_value_string (my_val))
     {
+        printf("    8\n");
       ecma_string_t *value_str_p = ecma_get_string_from_value (my_val);
-      ret_value = ecma_builtin_json_quote (value_str_p);
+      ecma_builtin_json_quote (context_p, value_str_p);
     }
     /* 9. */
     else if (ecma_is_value_number (my_val))
     {
+        printf("    9\n");
       ecma_number_t num_value_p = ecma_get_number_from_value (my_val);
 
       /* 9.a */
       if (!ecma_number_is_nan (num_value_p) && !ecma_number_is_infinity (num_value_p))
       {
-        ret_value = ecma_op_to_string (my_val);
-        JERRY_ASSERT (!ECMA_IS_VALUE_ERROR (ret_value));
+          ecma_value_t number_as_value = ecma_op_to_string (my_val);
+          JERRY_ASSERT (!ECMA_IS_VALUE_ERROR (number_as_value));
+        //ret_value = ecma_op_to_string (my_val);
+        //JERRY_ASSERT (!ECMA_IS_VALUE_ERROR (ret_value));
+
+        ecma_string_t *number_as_string = ecma_get_string_from_value (number_as_value);
+        ecma_string_construct_buffer_append (&context_p->str_buf_p, number_as_string);
+
+                lit_utf8_size_t size = ecma_string_get_size ((number_as_string));
+                lit_utf8_byte_t buffer[size];
+                size = ecma_string_copy_to_cesu8_buffer (number_as_string, buffer, size);
+                buffer[size] = '\0';
+                printf("number: `%s`\n", buffer);
       }
       else
       {
         /* 9.b */
-        ret_value = ecma_make_magic_string_value (LIT_MAGIC_STRING_NULL);
+        ecma_value_t null_value = ecma_make_magic_string_value (LIT_MAGIC_STRING_NULL);
+        ecma_string_t *null_string = ecma_get_string_from_value (null_value);
+        ecma_string_construct_buffer_append (&context_p->str_buf_p, null_string);
       }
     }
     /* 10. */
@@ -1501,28 +1590,33 @@ ecma_builtin_json_str (ecma_string_t *key_p, /**< property key*/
       /* 10.a */
       if (class_name == LIT_MAGIC_STRING_ARRAY_UL)
       {
-        ECMA_TRY_CATCH (val,
+          printf("    10a (array)\n");
+        /*ECMA_TRY_CATCH (val,
                         ecma_builtin_json_array (obj_p, context_p),
                         ret_value);
 
         ret_value = ecma_copy_value (val);
 
-        ECMA_FINALIZE (val);
+        ECMA_FINALIZE (val);*/
+          ret_value = ecma_builtin_json_array (obj_p, context_p);
       }
       /* 10.b */
       else
       {
-        ECMA_TRY_CATCH (val,
+          printf("    10b (object)\n");
+        /*ECMA_TRY_CATCH (val,
                         ecma_builtin_json_object (obj_p, context_p),
                         ret_value);
 
         ret_value = ecma_copy_value (val);
 
-        ECMA_FINALIZE (val);
+        ECMA_FINALIZE (val);*/
+          ret_value = ecma_builtin_json_object (obj_p, context_p);
       }
     }
     else
     {
+        printf("    11\n");
       /* 11. */
       ret_value = ECMA_VALUE_UNDEFINED;
     }
@@ -1608,52 +1702,94 @@ ecma_builtin_json_object (ecma_object_t *obj_p, /**< the object*/
   }
 
   /* 7. */
-  ecma_collection_header_t *partial_p = ecma_new_values_collection ();
+  //ecma_collection_header_t *partial_p = ecma_new_values_collection ();
 
   /* 8. */
+
+  ecma_string_t *bracket_p = ecma_new_ecma_string_from_code_unit (LIT_CHAR_LEFT_BRACE);
+  ecma_string_construct_buffer_append (&context_p->str_buf_p, bracket_p);
+  ecma_deref_ecma_string (bracket_p);
+
+
   ecma_value_t *ecma_value_p = ecma_collection_iterator_init (property_keys_p);
+
+  ecma_string_t *comma_char = ecma_get_magic_string (LIT_MAGIC_STRING__EMPTY);
+  ecma_string_t *lf_char = ecma_new_ecma_string_from_code_unit (LIT_CHAR_LF);
 
   while (ecma_value_p != NULL && ecma_is_value_empty (ret_value))
   {
-    ecma_string_t *key_p = ecma_get_string_from_value (*ecma_value_p);
-    ecma_value_p = ecma_collection_iterator_next (ecma_value_p);
+      ecma_string_t *key_p = ecma_get_string_from_value (*ecma_value_p);
 
-    /* 8.a */
-    ECMA_TRY_CATCH (str_val,
-                    ecma_builtin_json_str (key_p, obj_p, context_p),
-                    ret_value);
+          lit_utf8_size_t size = ecma_string_get_size ((key_p));
+          lit_utf8_byte_t buffer[size];
+          size = ecma_string_copy_to_cesu8_buffer (key_p, buffer, size);
+          buffer[size] = '\0';
+          printf("key: `%s`\n", buffer);
 
-    /* 8.b */
-    if (!ecma_is_value_undefined (str_val))
-    {
-      ecma_string_t *value_str_p = ecma_get_string_from_value (str_val);
+      ecma_value_p = ecma_collection_iterator_next (ecma_value_p);
 
-      /* 8.b.i */
-      ecma_value_t str_comp_val = ecma_builtin_json_quote (key_p);
-      JERRY_ASSERT (!ECMA_IS_VALUE_ERROR (str_comp_val));
 
-      ecma_string_t *member_str_p = ecma_get_string_from_value (str_comp_val);
 
-      /* 8.b.ii */
-      member_str_p = ecma_append_magic_string_to_string (member_str_p, LIT_MAGIC_STRING_COLON_CHAR);
-
-      /* 8.b.iii */
-      if (!ecma_string_is_empty (context_p->gap_str_p))
-      {
-        member_str_p = ecma_append_magic_string_to_string (member_str_p, LIT_MAGIC_STRING_SPACE_CHAR);
-      }
-
-      /* 8.b.iv */
-      member_str_p = ecma_concat_ecma_strings (member_str_p, value_str_p);
-
-      /* 8.b.v */
-      ecma_value_t member_value = ecma_make_string_value (member_str_p);
-      ecma_append_to_values_collection (partial_p, member_value, 0);
-      ecma_deref_ecma_string (member_str_p);
+    ecma_value_t value = ecma_op_object_get (obj_p, key_p);
+    if (ecma_is_value_undefined (value)) {
+        printf("is undefined\n");
+        continue;
     }
 
-    ECMA_FINALIZE (str_val);
+
+    ecma_string_construct_buffer_append (&context_p->str_buf_p, comma_char);
+    comma_char = ecma_get_magic_string (LIT_MAGIC_STRING_COMMA_CHAR);
+
+    if (!ecma_string_is_empty (context_p->gap_str_p)) {
+        ecma_string_construct_buffer_append (&context_p->str_buf_p, lf_char);
+        ecma_string_construct_buffer_append (&context_p->str_buf_p, context_p->indent_str_p);
+    }
+
+
+
+     ecma_builtin_json_quote (context_p, key_p);
+
+    /* 8.b */
+    //if (!ECMA_IS_VALUE_ERROR (ret_value))
+    //{
+
+        /* 8.b.ii */
+        ecma_string_t *colon_char = ecma_get_magic_string (LIT_MAGIC_STRING_COLON_CHAR);
+        //ecma_string_t *colon_char = ecma_new_ecma_string_from_code_unit (LIT_CHAR_COLON);
+        //ecma_string_t *colon_char = ecma_new_ecma_string_from_utf8 (LIT_MAGIC_STRING_COLON_CHAR, 1);
+        ecma_string_construct_buffer_append (&context_p->str_buf_p, colon_char);
+        ecma_deref_ecma_string (colon_char);
+
+        /* 8.b.iii */
+        if (!ecma_string_is_empty (context_p->gap_str_p))
+        {
+            ecma_string_t *space_char = ecma_get_magic_string (LIT_MAGIC_STRING_SPACE_CHAR);
+            //ecma_string_t *space_char = ecma_new_ecma_string_from_code_unit (LIT_CHAR_SP);
+            //ecma_string_t *space_char = ecma_new_ecma_string_from_code_unit (LIT_MAGIC_STRING_SPACE_CHAR);
+            ecma_string_construct_buffer_append (&context_p->str_buf_p, space_char);
+            ecma_deref_ecma_string (space_char);
+            //ecma_string_construct_buffer_append (&context_p->str_buf_p, context_p->gap_str_p);
+        }
+
+        /* 8.b.i */
+        /*printf("8.b.alja\n");
+        ecma_builtin_json_quote (context_p, key_p);*/
+    //}
+
+    /* 8.a */
+    printf("8.a\n");
+    ret_value = ecma_builtin_json_str (key_p, obj_p, context_p);
   }
+
+
+  if (!ecma_string_is_empty (context_p->gap_str_p)) {
+      ecma_string_construct_buffer_append (&context_p->str_buf_p, lf_char);
+      ecma_string_construct_buffer_append (&context_p->str_buf_p, stepback_p);
+  }
+  bracket_p = ecma_new_ecma_string_from_code_unit (LIT_CHAR_RIGHT_BRACE);
+  ecma_string_construct_buffer_append (&context_p->str_buf_p, bracket_p);
+  ecma_deref_ecma_string (bracket_p);
+
 
   if (context_p->property_list_p->item_count == 0)
   {
@@ -1662,42 +1798,43 @@ ecma_builtin_json_object (ecma_object_t *obj_p, /**< the object*/
 
   if (!ecma_is_value_empty (ret_value))
   {
-    ecma_free_values_collection (partial_p, 0);
+    //ecma_free_values_collection (partial_p, 0);
     ecma_deref_ecma_string (stepback_p);
     return ret_value;
   }
 
   /* 9. */
-  if (partial_p->item_count == 0)
+  /*if (partial_p->item_count == 0)
   {
     lit_utf8_byte_t chars[2] = { LIT_CHAR_LEFT_BRACE, LIT_CHAR_RIGHT_BRACE };
 
     ecma_string_t *final_str_p = ecma_new_ecma_string_from_utf8 (chars, 2);
     ret_value = ecma_make_string_value (final_str_p);
-  }
+  }*/
   /* 10. */
-  else
-  {
+  /*else
+  {*/
     /* 10.a */
-    if (ecma_string_is_empty (context_p->gap_str_p))
+    /*if (ecma_string_is_empty (context_p->gap_str_p))
     {
-      ret_value = ecma_builtin_helper_json_create_non_formatted_json_v1 (//context_p,
+        printf("ecma_builtin_json_object: ecma_builtin_helper_json_create_non_formatted_json\n");
+      ecma_builtin_helper_json_create_non_formatted_json (context_p,
                                                                       LIT_CHAR_LEFT_BRACE,
                                                                       LIT_CHAR_RIGHT_BRACE,
                                                                       partial_p);
-    }
+    }*/
     /* 10.b */
-    else
+    /*else
     {
-      ret_value = ecma_builtin_helper_json_create_formatted_json (context_p,
+      ecma_builtin_helper_json_create_formatted_json (context_p,
                                                                   LIT_CHAR_LEFT_BRACE,
                                                                   LIT_CHAR_RIGHT_BRACE,
                                                                   stepback_p,
                                                                   partial_p);
-    }
-  }
+    }*/
+  //}
 
-  ecma_free_values_collection (partial_p, 0);
+  //ecma_free_values_collection (partial_p, 0);
 
   /* 11. */
   context_p->occurence_stack_last_p = stack_item.next_p;
@@ -1756,67 +1893,97 @@ ecma_builtin_json_array (ecma_object_t *obj_p, /**< the array object*/
                                array_length,
                                ret_value);
 
+  ecma_string_t *square_p = ecma_new_ecma_string_from_code_unit (LIT_CHAR_LEFT_SQUARE);
+  ecma_string_construct_buffer_append (&context_p->str_buf_p, square_p);
+  ecma_deref_ecma_string (square_p);
+
+  ecma_string_t *comma_char = ecma_get_magic_string (LIT_MAGIC_STRING__EMPTY);
+  ecma_string_t *lf_char = ecma_new_ecma_string_from_code_unit (LIT_CHAR_LF);
+
   /* 7. - 8. */
   for (uint32_t index = 0;
        index < ecma_number_to_uint32 (array_length_num) && ecma_is_value_empty (ret_value);
        index++)
   {
+      ecma_string_construct_buffer_append (&context_p->str_buf_p, comma_char);
+      comma_char = ecma_get_magic_string (LIT_MAGIC_STRING_COMMA_CHAR);
+
+      if (!ecma_string_is_empty (context_p->gap_str_p)) {
+          ecma_string_construct_buffer_append (&context_p->str_buf_p, lf_char);
+          ecma_string_construct_buffer_append (&context_p->str_buf_p, context_p->indent_str_p);
+      }
+
 
     /* 8.a */
     ecma_string_t *index_str_p = ecma_new_ecma_string_from_uint32 (index);
 
-    ECMA_TRY_CATCH (str_val,
+
+    /*ECMA_TRY_CATCH (str_val,
                     ecma_builtin_json_str (index_str_p, obj_p, context_p),
-                    ret_value);
+                    ret_value);*/
+    ret_value = ecma_builtin_json_str (index_str_p, obj_p, context_p);
 
     /* 8.b */
-    if (ecma_is_value_undefined (str_val))
+    if (ecma_is_value_undefined (ret_value))
     {
-      ecma_append_to_values_collection (partial_p, ecma_make_magic_string_value (LIT_MAGIC_STRING_NULL), 0);
+        ret_value = ECMA_VALUE_EMPTY;
+        printf("8.b ecma_is_value_undefined\n");
+      //ecma_append_to_values_collection (partial_p, ecma_make_magic_string_value (LIT_MAGIC_STRING_NULL), 0);
+        ecma_string_t *null_str = ecma_get_magic_string (LIT_MAGIC_STRING_NULL);
+        ecma_string_construct_buffer_append (&context_p->str_buf_p, null_str);
+        ecma_deref_ecma_string (null_str);
     }
     /* 8.c */
-    else
+    /*else
     {
       ecma_append_to_values_collection (partial_p, str_val, 0);
-    }
+    }*/
 
-    ECMA_FINALIZE (str_val);
+    //ECMA_FINALIZE (str_val);
     ecma_deref_ecma_string (index_str_p);
   }
 
-  if (ecma_is_value_empty (ret_value))
-  {
+  if (!ecma_string_is_empty (context_p->gap_str_p)) {
+      ecma_string_construct_buffer_append (&context_p->str_buf_p, lf_char);
+      ecma_string_construct_buffer_append (&context_p->str_buf_p, stepback_p);
+  }
+  square_p = ecma_new_ecma_string_from_code_unit (LIT_CHAR_RIGHT_SQUARE);
+  ecma_string_construct_buffer_append (&context_p->str_buf_p, square_p);
+  ecma_deref_ecma_string (square_p);
+
+  /*if (ecma_is_value_empty (ret_value))
+  {*/
     /* 9. */
-    if (partial_p->item_count == 0)
+    /*if (partial_p->item_count == 0)
     {
       lit_utf8_byte_t chars[2] = { LIT_CHAR_LEFT_SQUARE, LIT_CHAR_RIGHT_SQUARE };
 
       ecma_string_t *final_str_p = ecma_new_ecma_string_from_utf8 (chars, 2);
       ret_value = ecma_make_string_value (final_str_p);
-    }
+    }*/
     /* 10. */
-    else
-    {
+    /*else
+    {*/
       /* 10.a */
-      if (ecma_string_is_empty (context_p->gap_str_p))
+      /*if (ecma_string_is_empty (context_p->gap_str_p))
       {
           printf("ecma_builtin_json_array\n");
-        ret_value = ecma_builtin_helper_json_create_non_formatted_json (context_p,
+        ecma_builtin_helper_json_create_non_formatted_json (context_p,
                                                                         LIT_CHAR_LEFT_SQUARE,
                                                                         LIT_CHAR_RIGHT_SQUARE,
                                                                         partial_p);
-      }
+      }*/
       /* 10.b */
-      else
+      /*else
       {
-        ret_value = ecma_builtin_helper_json_create_formatted_json (context_p,
+        ecma_builtin_helper_json_create_formatted_json (context_p,
                                                                     LIT_CHAR_LEFT_SQUARE,
                                                                     LIT_CHAR_RIGHT_SQUARE,
                                                                     stepback_p,
                                                                     partial_p);
       }
     }
-  }
+  }*/
 
   ECMA_OP_TO_NUMBER_FINALIZE (array_length_num);
   ECMA_FINALIZE (array_length);
@@ -1832,6 +1999,9 @@ ecma_builtin_json_array (ecma_object_t *obj_p, /**< the array object*/
 
   /* 13. */
   return ret_value;
+
+  /*ecma_string_t *result = ecma_string_construct_buffer_finalize (&context_p->str_buf_p);
+  return ecma_make_string_value (result);*/
 } /* ecma_builtin_json_array */
 
 /**
