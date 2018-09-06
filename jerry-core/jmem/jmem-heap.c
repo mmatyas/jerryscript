@@ -382,6 +382,7 @@ jmem_heap_alloc_block_null_on_error (const size_t size) /**< required memory siz
   return jmem_heap_gc_and_alloc_block (size, true);
 } /* jmem_heap_alloc_block_null_on_error */
 
+#ifndef JERRY_SYSTEM_ALLOCATOR
 static jmem_heap_free_t *
 jmem_heap_find_prev (const jmem_heap_free_t * const block_p)
 {
@@ -419,7 +420,9 @@ jmem_heap_find_prev (const jmem_heap_free_t * const block_p)
 
   return (jmem_heap_free_t *) prev_p;
 } /* jmem_heap_find_prev */
+#endif /* !JERRY_SYSTEM_ALLOCATOR */
 
+#ifndef JERRY_SYSTEM_ALLOCATOR
 static void
 jmem_heap_insert_block (jmem_heap_free_t *block_p,
                         jmem_heap_free_t *prev_p,
@@ -475,14 +478,15 @@ jmem_heap_insert_block (jmem_heap_free_t *block_p,
   {
     JERRY_CONTEXT (jmem_heap_limit) -= CONFIG_MEM_HEAP_DESIRED_LIMIT;
   }
-
 } /* jmem_heap_insert_block */
+#endif /* JERRY_SYSTEM_ALLOCATOR */
 
 void * JERRY_ATTR_HOT
 jmem_heap_realloc_block (void *ptr,
                          const size_t old_size,
                          const size_t new_size)
 {
+#ifndef JERRY_SYSTEM_ALLOCATOR
   JERRY_ASSERT (jmem_is_heap_pointer (ptr));
   JERRY_ASSERT ((uintptr_t) ptr % JMEM_ALIGNMENT == 0);
   JERRY_ASSERT (old_size != 0);
@@ -594,6 +598,11 @@ jmem_heap_realloc_block (void *ptr,
   JMEM_VALGRIND_NOACCESS_SPACE (next_p, sizeof (jmem_heap_free_t));
 
   return ret_block_p;
+#else /* JERRY_SYSTEM_ALLOCATOR */
+  JMEM_HEAP_STAT_FREE (old_size);
+  JMEM_HEAP_STAT_ALLOC (new_size);
+  return realloc (ptr, new_size);
+#endif /* !JERRY_SYSTEM_ALLOCATOR */
 } /* jmem_heap_realloc_block */
 
 /**
