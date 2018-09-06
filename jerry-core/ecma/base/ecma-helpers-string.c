@@ -2369,12 +2369,20 @@ ecma_string_construct_buffer_initialize (ecma_string_construct_buffer_t *buf_p, 
   buf_p->size = init_size;
 
   ecma_string_to_utf8_bytes (init_str_p, buf_p->buffer_p + sizeof (ecma_string_t), str_size);
+
+#ifdef JMEM_STATS
+  jmem_stats_allocate_string_bytes (init_size);
+#endif /* JMEM_STATS */
 } /* ecma_string_construct_buffer_initialize */
 
 void ecma_string_construct_buffer_initialize_empty (ecma_string_construct_buffer_t *buf_p)
 {
   buf_p->buffer_p = (lit_utf8_byte_t *) jmem_heap_alloc_block (sizeof (ecma_string_t));
   buf_p->size = sizeof (ecma_string_t);
+
+#ifdef JMEM_STATS
+  jmem_stats_allocate_string_bytes (sizeof (ecma_string_t));
+#endif /* JMEM_STATS */
 } /* ecma_string_construct_buffer_initialize_empty */
 
 void
@@ -2395,6 +2403,10 @@ ecma_string_construct_buffer_append (ecma_string_construct_buffer_t *strbuf_p, e
 
   ecma_string_to_utf8_bytes (str_p, current_p, str_size);
   strbuf_p->size = new_size;
+
+#ifdef JMEM_STATS
+  jmem_stats_allocate_string_bytes (str_size);
+#endif /* JMEM_STATS */
 } /* ecma_string_construct_buffer_append */
 
 ecma_string_t *
@@ -2409,6 +2421,9 @@ ecma_string_construct_buffer_finalize (ecma_string_construct_buffer_t *strbuf_p)
   if (magic_string_id != LIT_MAGIC_STRING__COUNT)
   {
     jmem_heap_free_block (strbuf_p->buffer_p, strbuf_p->size);
+#ifdef JMEM_STATS
+    jmem_stats_free_string_bytes (strbuf_p->size);
+#endif /* JMEM_STATS */
     return ecma_get_magic_string (magic_string_id);
   }
 
@@ -2421,6 +2436,9 @@ ecma_string_construct_buffer_finalize (ecma_string_construct_buffer_t *strbuf_p)
     if (ecma_string_to_array_index (string_p, string_size, &array_index))
     {
       jmem_heap_free_block (strbuf_p->buffer_p, strbuf_p->size);
+#ifdef JMEM_STATS
+      jmem_stats_free_string_bytes (strbuf_p->size);
+#endif /* JMEM_STATS */
       return ecma_new_ecma_string_from_uint32 (array_index);
     }
   }
@@ -2432,6 +2450,9 @@ ecma_string_construct_buffer_finalize (ecma_string_construct_buffer_t *strbuf_p)
     if (magic_string_ex_id < lit_get_magic_string_ex_count ())
     {
       jmem_heap_free_block (strbuf_p->buffer_p, strbuf_p->size);
+#ifdef JMEM_STATS
+      jmem_stats_free_string_bytes (strbuf_p->size);
+#endif /* JMEM_STATS */
       return ecma_new_ecma_string_from_magic_string_ex_id (magic_string_ex_id);
     }
   }
@@ -2453,6 +2474,9 @@ ecma_string_construct_buffer_finalize (ecma_string_construct_buffer_t *strbuf_p)
   {
     ret_p = ecma_new_ecma_string_from_utf8 (string_p, string_size);
     jmem_heap_free_block (strbuf_p->buffer_p, strbuf_p->size);
+#ifdef JMEM_STATS
+    jmem_stats_free_string_bytes (strbuf_p->size);
+#endif /* JMEM_STATS */
   }
   return ret_p;
 } /* ecma_string_construct_buffer_finalize */
