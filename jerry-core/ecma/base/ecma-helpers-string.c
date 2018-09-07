@@ -2466,7 +2466,7 @@ ecma_string_construct_buffer_finalize (ecma_string_construct_buffer_t *strbuf_p)
     string_desc_p->u.common_uint32_field = 0;
     string_desc_p->u.utf8_string.size = (uint16_t) string_size;
     string_desc_p->u.utf8_string.length = (uint16_t) lit_utf8_string_length (string_p, string_size);
-    string_desc_p->hash = lit_utf8_string_calc_hash(string_p, string_size);
+    string_desc_p->hash = lit_utf8_string_calc_hash (string_p, string_size);
 
     ret_p = string_desc_p;
   }

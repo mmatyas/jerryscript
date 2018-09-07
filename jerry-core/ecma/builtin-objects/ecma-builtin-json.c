@@ -929,13 +929,13 @@ static ecma_value_t ecma_builtin_json_str_helper (const ecma_value_t arg1, /**< 
   ecma_string_construct_buffer_initialize_empty (&context.str_buf_p);
 
   ret_value = ecma_builtin_json_str (empty_str_p, obj_wrapper_p, &context);
-  if (ECMA_IS_VALUE_ERROR (ret_value) || ecma_is_value_undefined(ret_value))
+  if (ECMA_IS_VALUE_ERROR (ret_value) || ecma_is_value_undefined (ret_value))
   {
     ecma_string_construct_buffer_destroy (&context.str_buf_p);
   }
   else
   {
-    ecma_string_t* str = ecma_string_construct_buffer_finalize (&context.str_buf_p);
+    ecma_string_t *str = ecma_string_construct_buffer_finalize (&context.str_buf_p);
     ret_value = ecma_make_string_value (str);
   }
 
@@ -1352,7 +1352,7 @@ ecma_builtin_json_quote (ecma_json_stringify_context_t *context_p, /**< context*
   ecma_string_t *product_str_p = ecma_new_ecma_string_from_utf8 ((const lit_utf8_byte_t *) buf_begin,
                                                                  (lit_utf8_size_t) (buf - buf_begin));
   ecma_string_construct_buffer_append (&context_p->str_buf_p, product_str_p);
-  ecma_deref_ecma_string(product_str_p);
+  ecma_deref_ecma_string (product_str_p);
 
   jmem_heap_free_block (buf_begin, n_bytes);
   ECMA_FINALIZE_UTF8_STRING (string_buff, string_buff_size);
@@ -1503,7 +1503,7 @@ ecma_builtin_json_str (ecma_string_t *key_p, /**< property key*/
 
         ecma_string_t *number_as_string = ecma_get_string_from_value (number_as_value);
         ecma_string_construct_buffer_append (&context_p->str_buf_p, number_as_string);
-        ecma_deref_ecma_string(number_as_string);
+        ecma_deref_ecma_string (number_as_string);
       }
       else
       {

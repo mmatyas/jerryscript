@@ -238,7 +238,7 @@ ecma_builtin_string_prototype_object_concat (ecma_value_t this_arg, /**< this ar
   /* No copy performed */
 
   /* 4 */
-  ecma_string_t* init_string = ecma_get_string_from_value (to_string_val);
+  ecma_string_t *init_string = ecma_get_string_from_value (to_string_val);
   ecma_string_construct_buffer_t strbuf;
   ecma_string_construct_buffer_initialize (&strbuf, init_string);
   ecma_deref_ecma_string (init_string);

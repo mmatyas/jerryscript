@@ -261,9 +261,10 @@ lit_string_hash_t ecma_string_hash (const ecma_string_t *string_p);
 ecma_string_t *ecma_string_substr (const ecma_string_t *string_p, ecma_length_t start_pos, ecma_length_t end_pos);
 ecma_string_t *ecma_string_trim (const ecma_string_t *string_p);
 
-typedef struct {
-    lit_utf8_size_t size;
-    lit_utf8_byte_t *buffer_p;
+typedef struct
+{
+  lit_utf8_size_t size;
+  lit_utf8_byte_t *buffer_p;
 } ecma_string_construct_buffer_t;
 
 void ecma_string_construct_buffer_initialize (ecma_string_construct_buffer_t *,
