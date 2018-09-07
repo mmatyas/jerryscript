@@ -507,9 +507,11 @@ jmem_heap_realloc_block (void *ptr,
 
   if (aligned_new_size < aligned_old_size)
   {
-      JMEM_VALGRIND_NOACCESS_SPACE (block_p + new_size, old_size - new_size);
-      jmem_heap_insert_block ((jmem_heap_free_t *)((uint8_t *) block_p + aligned_new_size), prev_p, aligned_old_size - aligned_new_size);
-      return block_p;
+    JMEM_VALGRIND_NOACCESS_SPACE (block_p + new_size, old_size - new_size);
+    jmem_heap_insert_block ((jmem_heap_free_t *)((uint8_t *) block_p + aligned_new_size),
+                            prev_p,
+                            aligned_old_size - aligned_new_size);
+    return block_p;
   }
 
   void *ret_block_p = NULL;
@@ -524,23 +526,23 @@ jmem_heap_realloc_block (void *ptr,
   {
     if (required_size <= next_p->size)
     {
-        /* Block can be extended, update the list. */
-        if (required_size == next_p->size)
-        {
-            prev_p->next_offset = next_p->next_offset;
-        }
-        else
-        {
-            jmem_heap_free_t *const new_next_p = (jmem_heap_free_t *) ((uint8_t *) next_p + required_size);
-            JMEM_VALGRIND_DEFINED_SPACE (new_next_p, sizeof (jmem_heap_free_t));
-            new_next_p->next_offset = next_p->next_offset;
-            new_next_p->size = (uint32_t) (next_p->size - required_size);
-            JMEM_VALGRIND_NOACCESS_SPACE (new_next_p, sizeof (jmem_heap_free_t));
-            prev_p->next_offset = JMEM_HEAP_GET_OFFSET_FROM_ADDR (new_next_p);
-        }
+      /* Block can be extended, update the list. */
+      if (required_size == next_p->size)
+      {
+        prev_p->next_offset = next_p->next_offset;
+      }
+      else
+      {
+        jmem_heap_free_t *const new_next_p = (jmem_heap_free_t *) ((uint8_t *) next_p + required_size);
+        JMEM_VALGRIND_DEFINED_SPACE (new_next_p, sizeof (jmem_heap_free_t));
+        new_next_p->next_offset = next_p->next_offset;
+        new_next_p->size = (uint32_t) (next_p->size - required_size);
+        JMEM_VALGRIND_NOACCESS_SPACE (new_next_p, sizeof (jmem_heap_free_t));
+        prev_p->next_offset = JMEM_HEAP_GET_OFFSET_FROM_ADDR (new_next_p);
+      }
 
-        JMEM_VALGRIND_UNDEFINED_SPACE ((uint8_t *) block_p + old_size, new_size - old_size);
-        ret_block_p = block_p;
+      JMEM_VALGRIND_UNDEFINED_SPACE ((uint8_t *) block_p + old_size, new_size - old_size);
+      ret_block_p = block_p;
     }
   }
   /*
@@ -551,25 +553,25 @@ jmem_heap_realloc_block (void *ptr,
   {
     if (required_size <= prev_p->size)
     {
-        if (required_size == prev_p->size)
-        {
-            prev_p = jmem_heap_find_prev (prev_p);
-            JMEM_VALGRIND_DEFINED_SPACE (prev_p, sizeof (jmem_heap_free_t));
-            prev_p->next_offset = JMEM_HEAP_GET_OFFSET_FROM_ADDR (next_p);
-        }
-        else
-        {
-            prev_p->size = (uint32_t) (prev_p->size - required_size);
-        }
+      if (required_size == prev_p->size)
+      {
+        prev_p = jmem_heap_find_prev (prev_p);
+        JMEM_VALGRIND_DEFINED_SPACE (prev_p, sizeof (jmem_heap_free_t));
+        prev_p->next_offset = JMEM_HEAP_GET_OFFSET_FROM_ADDR (next_p);
+      }
+      else
+      {
+        prev_p->size = (uint32_t) (prev_p->size - required_size);
+      }
 
-        JMEM_VALGRIND_DEFINED_SPACE ((uint8_t *) block_p - required_size, new_size);
-        ret_block_p = (uint8_t *) block_p - required_size;
+      JMEM_VALGRIND_DEFINED_SPACE ((uint8_t *) block_p - required_size, new_size);
+      ret_block_p = (uint8_t *) block_p - required_size;
 
-        /* Since we're copying forwards in memory, it's okay to use memcpy here. */
-        memcpy (ret_block_p, block_p, old_size);
-        JMEM_VALGRIND_NOACCESS_SPACE ((uint8_t *) block_p, old_size);
-        JMEM_VALGRIND_UNDEFINED_SPACE ((uint8_t *) ret_block_p, new_size);
-        JMEM_VALGRIND_DEFINED_SPACE ((uint8_t *) ret_block_p, old_size);
+      /* Since we're copying forwards in memory, it's okay to use memcpy here. */
+      memcpy (ret_block_p, block_p, old_size);
+      JMEM_VALGRIND_NOACCESS_SPACE ((uint8_t *) block_p, old_size);
+      JMEM_VALGRIND_UNDEFINED_SPACE ((uint8_t *) ret_block_p, new_size);
+      JMEM_VALGRIND_DEFINED_SPACE ((uint8_t *) ret_block_p, old_size);
     }
   }
 
