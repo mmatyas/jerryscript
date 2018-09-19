@@ -567,8 +567,8 @@ jmem_heap_realloc_block (void *ptr,
       JMEM_VALGRIND_DEFINED_SPACE ((uint8_t *) block_p - required_size, new_size);
       ret_block_p = (uint8_t *) block_p - required_size;
 
-      /* Since we're copying forwards in memory, it's okay to use memcpy here. */
-      memcpy (ret_block_p, block_p, old_size);
+      /* The source and destination regions may overlap, so we need to use memmove here. */
+      memmove (ret_block_p, block_p, old_size);
       JMEM_VALGRIND_NOACCESS_SPACE ((uint8_t *) block_p, old_size);
       JMEM_VALGRIND_UNDEFINED_SPACE ((uint8_t *) ret_block_p, new_size);
       JMEM_VALGRIND_DEFINED_SPACE ((uint8_t *) ret_block_p, old_size);
