@@ -243,11 +243,11 @@ ecma_string_t *ecma_string_from_property_name (ecma_property_t property, jmem_cp
 lit_string_hash_t ecma_string_get_property_name_hash (ecma_property_t property, jmem_cpointer_t prop_name_cp);
 uint32_t ecma_string_get_property_index (ecma_property_t property, jmem_cpointer_t prop_name_cp);
 bool ecma_string_compare_to_property_name (ecma_property_t property, jmem_cpointer_t prop_name_cp,
-                                           const ecma_string_t *string_p);
+                                           ecma_string_t *string_p);
 
-bool ecma_compare_ecma_strings (const ecma_string_t *string1_p, const ecma_string_t *string2_p);
-bool ecma_compare_ecma_non_direct_strings (const ecma_string_t *string1_p, const ecma_string_t *string2_p);
-bool ecma_compare_ecma_strings_relational (const ecma_string_t *string1_p, const ecma_string_t *string2_p);
+bool ecma_compare_ecma_strings (ecma_string_t *string1_p, ecma_string_t *string2_p);
+bool ecma_compare_ecma_non_direct_strings (ecma_string_t *string1_p, ecma_string_t *string2_p);
+bool ecma_compare_ecma_strings_relational (ecma_string_t *string1_p, ecma_string_t *string2_p);
 ecma_length_t ecma_string_get_length (ecma_string_t *string_p);
 ecma_length_t ecma_string_get_utf8_length (ecma_string_t *string_p);
 lit_utf8_size_t ecma_string_get_size (const ecma_string_t *string_p);
