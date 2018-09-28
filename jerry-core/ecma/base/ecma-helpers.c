@@ -583,6 +583,15 @@ ecma_find_named_property (ecma_object_t *obj_p, /**< object to find property in 
   ecma_property_t *property_p = NULL;
 
 #ifndef CONFIG_ECMA_LCACHE_DISABLE
+
+  if (!ECMA_IS_DIRECT_STRING (name_p) && name_p->hash == 0)
+  {
+      lit_utf8_size_t size = (name_p->refs_and_container & ECMA_STRING_CONTAINER_HEAP_LONG_UTF8_STRING)
+                           ? name_p->u.long_utf8_string_size
+                           : name_p->u.utf8_string.size;
+      name_p->hash = lit_utf8_string_calc_hash ((lit_utf8_byte_t *) (name_p + 1), size);
+  }
+
   property_p = ecma_lcache_lookup (obj_p, name_p);
   if (property_p != NULL)
   {
