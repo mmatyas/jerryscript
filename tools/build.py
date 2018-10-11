@@ -61,6 +61,8 @@ def get_arguments():
                           help='add custom compile flag')
     buildgrp.add_argument('--debug', action='store_const', const='Debug', dest='build_type',
                           help='debug build')
+    buildgrp.add_argument('--fast', action='store_const', const='Release', dest='build_type',
+                          help='release build')
     buildgrp.add_argument('--install', metavar='DIR', nargs='?', default=None, const=False,
                           help='install after build (default: don\'t install; '
                                'default directory if install: OS-specific)')
@@ -102,7 +104,7 @@ def get_arguments():
     coregrp = parser.add_argument_group('jerry-core options')
     coregrp.add_argument('--all-in-one', metavar='X', choices=['ON', 'OFF'], type=str.upper,
                          help='all-in-one build (%(choices)s)')
-    coregrp.add_argument('--cpointer-32bit', metavar='X', choices=['ON', 'OFF'], type=str.upper,
+    coregrp.add_argument('--cpointer-32bit', metavar='X', choices=['ON', 'OFF'], type=str.upper, default='ON',
                          help='enable 32 bit compressed pointers (%(choices)s)')
     coregrp.add_argument('--error-messages', metavar='X', choices=['ON', 'OFF'], type=str.upper,
                          help='enable error messages (%(choices)s)')
@@ -116,13 +118,13 @@ def get_arguments():
                          help='provide line info (%(choices)s)')
     coregrp.add_argument('--logging', metavar='X', choices=['ON', 'OFF'], type=str.upper,
                          help='enable logging (%(choices)s)')
-    coregrp.add_argument('--mem-heap', metavar='SIZE', type=int,
+    coregrp.add_argument('--mem-heap', metavar='SIZE', type=int, default=8192,
                          help='size of memory heap (in kilobytes)')
     coregrp.add_argument('--mem-stats', metavar='X', choices=['ON', 'OFF'], type=str.upper,
                          help=devhelp('enable memory statistics (%(choices)s)'))
     coregrp.add_argument('--mem-stress-test', metavar='X', choices=['ON', 'OFF'], type=str.upper,
                          help=devhelp('enable mem-stress test (%(choices)s)'))
-    coregrp.add_argument('--profile', metavar='FILE',
+    coregrp.add_argument('--profile', metavar='FILE', default="es2015-subset",
                          help='specify profile file')
     coregrp.add_argument('--regexp-strict-mode', metavar='X', choices=['ON', 'OFF'], type=str.upper,
                          help=devhelp('enable regexp strict mode (%(choices)s)'))
