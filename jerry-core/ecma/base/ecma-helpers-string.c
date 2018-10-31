@@ -503,6 +503,28 @@ ecma_get_magic_string (lit_magic_string_id_t id) /**< identifier of magic string
   return (ecma_string_t *) ECMA_CREATE_DIRECT_STRING (ECMA_DIRECT_STRING_MAGIC, (uintptr_t) id);
 } /* ecma_get_magic_string */
 
+
+/**
+ * Calculate the hash of a non-direct string, if not yet set
+ */
+void
+ecma_string_calc_hash_maybe (ecma_string_t *string_p) /**< ecma-string */
+{
+  JERRY_ASSERT (string_p != NULL);
+
+  if (ECMA_IS_DIRECT_STRING (string_p) || string_p->hash != 0)
+  {
+    return;
+  }
+
+  lit_utf8_size_t size = ecma_string_get_size (string_p);
+  lit_utf8_byte_t *data_p = JERRY_LIKELY (size <= UINT16_MAX)
+                          ? (lit_utf8_byte_t *) (string_p + 1)
+                          : (lit_utf8_byte_t *) ((ecma_long_string_t *) (string_p) + 1);
+  string_p->hash = lit_utf8_string_calc_hash (data_p, size);
+} /* ecma_string_calc_hash_maybe */
+
+
 /**
  * Append a cesu8 string after an ecma-string
  *
@@ -706,6 +728,7 @@ ecma_append_chars_to_string (ecma_string_t *string1_p, /**< base ecma-string */
   else
   {
     JERRY_ASSERT (!ECMA_IS_DIRECT_STRING (string1_p));
+    ecma_string_calc_hash_maybe (string1_p);
     hash_start = string1_p->hash;
   }
 
@@ -1761,6 +1784,8 @@ ecma_compare_ecma_strings (ecma_string_t *string1_p, /**< ecma-string */
     return false;
   }
 
+  ecma_string_calc_hash_maybe (string1_p);
+  ecma_string_calc_hash_maybe (string2_p);
   if (string1_p->hash != string2_p->hash)
   {
     return false;
@@ -1800,6 +1825,8 @@ ecma_compare_ecma_non_direct_strings (ecma_string_t *string1_p, /**< ecma-string
     return true;
   }
 
+  ecma_string_calc_hash_maybe (string1_p);
+  ecma_string_calc_hash_maybe (string2_p);
   if (string1_p->hash != string2_p->hash)
   {
     return false;
