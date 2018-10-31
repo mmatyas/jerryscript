@@ -267,7 +267,7 @@ ecma_new_ecma_string_from_utf8 (const lit_utf8_byte_t *string_p, /**< utf-8 stri
     data_p = (lit_utf8_byte_t *) (long_string_desc_p + 1);
   }
 
-  string_desc_p->hash = lit_utf8_string_calc_hash (string_p, string_size);
+  string_desc_p->hash = 0; // lazy
   memcpy (data_p, string_p, string_size);
   return string_desc_p;
 } /* ecma_new_ecma_string_from_utf8 */
@@ -355,7 +355,6 @@ ecma_new_ecma_string_from_utf8_converted_to_cesu8 (const lit_utf8_byte_t *string
       data_p = (lit_utf8_byte_t *) (long_string_desc_p + 1);
     }
 
-    const lit_utf8_byte_t *const begin_data_p = data_p;
     pos = 0;
 
     while (pos < string_size)
@@ -382,7 +381,7 @@ ecma_new_ecma_string_from_utf8_converted_to_cesu8 (const lit_utf8_byte_t *string
 
     JERRY_ASSERT (pos == string_size);
 
-    string_desc_p->hash = lit_utf8_string_calc_hash (begin_data_p, converted_string_size);
+    string_desc_p->hash = 0; // lazy
   }
 
   return string_desc_p;
@@ -478,7 +477,7 @@ ecma_new_ecma_string_from_number (ecma_number_t num) /**< ecma-number */
   ecma_string_t *string_desc_p = ecma_alloc_string_buffer (sizeof (ecma_string_t) + str_size);
 
   string_desc_p->refs_and_container = ECMA_STRING_CONTAINER_HEAP_UTF8_STRING | ECMA_STRING_REF_ONE;
-  string_desc_p->hash = lit_utf8_string_calc_hash (str_buf, str_size);
+  string_desc_p->hash = 0; // lazy
   string_desc_p->u.common_uint32_field = 0;
   string_desc_p->u.utf8_string.size = (uint16_t) str_size;
   string_desc_p->u.utf8_string.length = (uint16_t) str_size;
