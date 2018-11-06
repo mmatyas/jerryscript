@@ -583,7 +583,10 @@ ecma_find_named_property (ecma_object_t *obj_p, /**< object to find property in 
   ecma_property_t *property_p = NULL;
 
 #ifndef CONFIG_ECMA_LCACHE_DISABLE
-  ecma_string_calc_hash_maybe (name_p);
+  if (!ECMA_IS_DIRECT_STRING (name_p))
+  {
+    ecma_string_calc_hash_maybe (name_p);
+  }
   property_p = ecma_lcache_lookup (obj_p, name_p);
   if (property_p != NULL)
   {

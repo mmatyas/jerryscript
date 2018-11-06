@@ -510,8 +510,9 @@ void
 ecma_string_calc_hash_maybe (ecma_string_t *string_p) /**< ecma-string */
 {
   JERRY_ASSERT (string_p != NULL);
+  JERRY_ASSERT (!ECMA_IS_DIRECT_STRING (string_p));
 
-  if (ECMA_IS_DIRECT_STRING (string_p) || string_p->hash != 0)
+  if (string_p->hash != 0)
   {
     return;
   }
