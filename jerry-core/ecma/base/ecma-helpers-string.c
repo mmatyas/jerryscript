@@ -506,7 +506,7 @@ ecma_get_magic_string (lit_magic_string_id_t id) /**< identifier of magic string
 /**
  * Calculate the hash of a non-direct string, if not yet set
  */
-void
+inline void JERRY_ATTR_ALWAYS_INLINE
 ecma_string_calc_hash_maybe (ecma_string_t *string_p) /**< ecma-string */
 {
   JERRY_ASSERT (string_p != NULL);
