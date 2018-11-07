@@ -512,16 +512,14 @@ ecma_string_calc_hash_maybe (ecma_string_t *string_p) /**< ecma-string */
   JERRY_ASSERT (string_p != NULL);
   JERRY_ASSERT (!ECMA_IS_DIRECT_STRING (string_p));
 
-  if (string_p->hash != 0)
+  if (string_p->hash == 0)
   {
-    return;
+      lit_utf8_size_t size = ecma_string_get_size (string_p);
+      lit_utf8_byte_t *data_p = JERRY_LIKELY (size <= UINT16_MAX)
+                              ? (lit_utf8_byte_t *) (string_p + 1)
+                              : (lit_utf8_byte_t *) ((ecma_long_string_t *) (string_p) + 1);
+      string_p->hash = lit_utf8_string_calc_hash (data_p, size);
   }
-
-  lit_utf8_size_t size = ecma_string_get_size (string_p);
-  lit_utf8_byte_t *data_p = JERRY_LIKELY (size <= UINT16_MAX)
-                          ? (lit_utf8_byte_t *) (string_p + 1)
-                          : (lit_utf8_byte_t *) ((ecma_long_string_t *) (string_p) + 1);
-  string_p->hash = lit_utf8_string_calc_hash (data_p, size);
 } /* ecma_string_calc_hash_maybe */
 
 
