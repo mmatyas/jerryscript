@@ -597,6 +597,8 @@ jmem_heap_realloc_block (void *ptr,
   JMEM_VALGRIND_NOACCESS_SPACE (prev_p, sizeof (jmem_heap_free_t));
   JMEM_VALGRIND_NOACCESS_SPACE (next_p, sizeof (jmem_heap_free_t));
 
+  JMEM_HEAP_STAT_FREE (old_size);
+  JMEM_HEAP_STAT_ALLOC (new_size);
   return ret_block_p;
 #else /* JERRY_SYSTEM_ALLOCATOR */
   JMEM_HEAP_STAT_FREE (old_size);
