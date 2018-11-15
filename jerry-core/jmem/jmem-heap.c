@@ -509,8 +509,10 @@ jmem_heap_realloc_block (void *ptr,
 
   if (aligned_new_size < aligned_old_size)
   {
-    JMEM_VALGRIND_NOACCESS_SPACE (block_p + new_size, old_size - new_size);
-    JMEM_HEAP_STAT_FREE (old_size - new_size);
+    JMEM_VALGRIND_NOACCESS_SPACE (block_p, old_size);
+    JMEM_VALGRIND_DEFINED_SPACE (block_p, new_size);
+    JMEM_HEAP_STAT_FREE (old_size);
+    JMEM_HEAP_STAT_ALLOC (new_size);
     jmem_heap_insert_block ((jmem_heap_free_t *)((uint8_t *) block_p + aligned_new_size),
                             prev_p,
                             aligned_old_size - aligned_new_size);
@@ -544,7 +546,8 @@ jmem_heap_realloc_block (void *ptr,
         prev_p->next_offset = JMEM_HEAP_GET_OFFSET_FROM_ADDR (new_next_p);
       }
 
-      JMEM_VALGRIND_UNDEFINED_SPACE ((uint8_t *) block_p + old_size, new_size - old_size);
+      JMEM_VALGRIND_UNDEFINED_SPACE ((uint8_t *) block_p, new_size);
+      JMEM_VALGRIND_DEFINED_SPACE ((uint8_t *) block_p, old_size);
       ret_block_p = block_p;
     }
   }
@@ -567,16 +570,14 @@ jmem_heap_realloc_block (void *ptr,
         prev_p->size = (uint32_t) (prev_p->size - required_size);
       }
 
-      JMEM_VALGRIND_DEFINED_SPACE ((uint8_t *) block_p - required_size, new_size);
       ret_block_p = (uint8_t *) block_p - required_size;
+      JMEM_VALGRIND_DEFINED_SPACE (ret_block_p, new_size);
 
       /* The source and destination regions may overlap, so we need to use memmove here. */
       memmove (ret_block_p, block_p, old_size);
       JMEM_VALGRIND_NOACCESS_SPACE ((uint8_t *) block_p, old_size);
       JMEM_VALGRIND_UNDEFINED_SPACE ((uint8_t *) ret_block_p, new_size);
       JMEM_VALGRIND_DEFINED_SPACE ((uint8_t *) ret_block_p, old_size);
-      JMEM_HEAP_STAT_ALLOC (new_size);
-      JMEM_HEAP_STAT_FREE (old_size);
     }
   }
 
@@ -590,6 +591,9 @@ jmem_heap_realloc_block (void *ptr,
     {
       JERRY_CONTEXT (jmem_heap_limit) += CONFIG_MEM_HEAP_DESIRED_LIMIT;
     }
+
+    JMEM_HEAP_STAT_ALLOC (new_size);
+    JMEM_HEAP_STAT_FREE (old_size);
   }
   else
   {
@@ -597,7 +601,7 @@ jmem_heap_realloc_block (void *ptr,
     ret_block_p = jmem_heap_alloc_block (new_size);
     memcpy (ret_block_p, block_p, old_size);
     jmem_heap_insert_block (block_p, prev_p, aligned_old_size);
-    JMEM_HEAP_STAT_ALLOC (new_size);
+    /* jmem_heap_alloc_block will stat the alloc size */
     JMEM_HEAP_STAT_FREE (old_size);
   }
 
