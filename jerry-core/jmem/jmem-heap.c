@@ -500,6 +500,8 @@ jmem_heap_realloc_block (void *ptr,
   {
     JMEM_VALGRIND_NOACCESS_SPACE (block_p, old_size);
     JMEM_VALGRIND_DEFINED_SPACE (block_p, new_size);
+    JMEM_HEAP_STAT_FREE (old_size);
+    JMEM_HEAP_STAT_ALLOC (new_size);
     return block_p;
   }
 
@@ -508,6 +510,7 @@ jmem_heap_realloc_block (void *ptr,
   if (aligned_new_size < aligned_old_size)
   {
     JMEM_VALGRIND_NOACCESS_SPACE (block_p + new_size, old_size - new_size);
+    JMEM_HEAP_STAT_FREE (old_size - new_size);
     jmem_heap_insert_block ((jmem_heap_free_t *)((uint8_t *) block_p + aligned_new_size),
                             prev_p,
                             aligned_old_size - aligned_new_size);
@@ -572,6 +575,8 @@ jmem_heap_realloc_block (void *ptr,
       JMEM_VALGRIND_NOACCESS_SPACE ((uint8_t *) block_p, old_size);
       JMEM_VALGRIND_UNDEFINED_SPACE ((uint8_t *) ret_block_p, new_size);
       JMEM_VALGRIND_DEFINED_SPACE ((uint8_t *) ret_block_p, old_size);
+      JMEM_HEAP_STAT_ALLOC (new_size);
+      JMEM_HEAP_STAT_FREE (old_size);
     }
   }
 
@@ -592,13 +597,13 @@ jmem_heap_realloc_block (void *ptr,
     ret_block_p = jmem_heap_alloc_block (new_size);
     memcpy (ret_block_p, block_p, old_size);
     jmem_heap_insert_block (block_p, prev_p, aligned_old_size);
+    JMEM_HEAP_STAT_ALLOC (new_size);
+    JMEM_HEAP_STAT_FREE (old_size);
   }
 
   JMEM_VALGRIND_NOACCESS_SPACE (prev_p, sizeof (jmem_heap_free_t));
   JMEM_VALGRIND_NOACCESS_SPACE (next_p, sizeof (jmem_heap_free_t));
 
-  JMEM_HEAP_STAT_FREE (old_size);
-  JMEM_HEAP_STAT_ALLOC (new_size);
   return ret_block_p;
 #else /* JERRY_SYSTEM_ALLOCATOR */
   JMEM_HEAP_STAT_FREE (old_size);
