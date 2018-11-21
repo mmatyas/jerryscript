@@ -117,7 +117,7 @@ def get_arguments():
     coregrp.add_argument('--logging', metavar='X', choices=['ON', 'OFF'], type=str.upper,
                          help='enable logging (%(choices)s)')
     coregrp.add_argument('--mem-heap', metavar='SIZE', type=int,
-                         help='size of memory heap (in kilobytes)')
+                         help='size of memory heap (in kilobytes)', default=8)
     coregrp.add_argument('--mem-stats', metavar='X', choices=['ON', 'OFF'], type=str.upper,
                          help=devhelp('enable memory statistics (%(choices)s)'))
     coregrp.add_argument('--mem-stress-test', metavar='X', choices=['ON', 'OFF'], type=str.upper,
