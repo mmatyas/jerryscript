@@ -211,6 +211,9 @@ typedef enum
   LEXER_KEYW_STATIC,             /**< static */
 } lexer_token_type_t;
 
+void print_lexer_token_type(lexer_token_type_t val);
+
+
 #define LEXER_NEWLINE_LS_PS_BYTE_1 0xe2
 #define LEXER_NEWLINE_LS_PS_BYTE_23(source) \
   ((source)[1] == LIT_UTF8_2_BYTE_CODE_POINT_MIN && ((source)[2] | 0x1) == 0xa9)

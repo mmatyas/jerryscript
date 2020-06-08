@@ -1036,6 +1036,14 @@ vm_loop (vm_frame_ctx_t *frame_ctx_p) /**< frame context */
       {
         uint16_t literal_index;
         READ_LITERAL_INDEX (literal_index);
+
+        ecma_object_t *func_obj_p = ecma_get_object_from_value (stack_top_p[-1]);
+        ecma_object_type_t func_obj_type = ecma_get_object_type (func_obj_p);
+        JERRY_UNUSED(func_obj_type);
+
+        // if (ecma_get_object_type (func_obj_p) != ECMA_OBJECT_TYPE_EXTERNAL_FUNCTION)
+
+
         READ_LITERAL (literal_index, left_value);
 
         if (operands != VM_OC_GET_LITERAL)

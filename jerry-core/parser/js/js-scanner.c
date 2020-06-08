@@ -2250,6 +2250,98 @@ scanner_scan_statement_end (parser_context_t *context_p, /**< context */
   }
 } /* scanner_scan_statement_end */
 
+static void print_scan_stack_mode(scan_stack_modes_t val) {
+  switch (val) {
+    case SCAN_STACK_SCRIPT: printf("SCAN_STACK_SCRIPT"); break;                       /**< script */
+    case SCAN_STACK_SCRIPT_FUNCTION: printf("SCAN_STACK_SCRIPT_FUNCTION"); break;              /**< script is a function body */
+    case SCAN_STACK_BLOCK_STATEMENT: printf("SCAN_STACK_BLOCK_STATEMENT"); break;              /**< block statement group */
+    case SCAN_STACK_FUNCTION_STATEMENT: printf("SCAN_STACK_FUNCTION_STATEMENT"); break;           /**< function statement */
+    case SCAN_STACK_FUNCTION_EXPRESSION: printf("SCAN_STACK_FUNCTION_EXPRESSION"); break;          /**< function expression */
+    case SCAN_STACK_FUNCTION_PROPERTY: printf("SCAN_STACK_FUNCTION_PROPERTY"); break;            /**< function expression in an object literal or class */
+#if ENABLED (JERRY_ES2015)
+    case SCAN_STACK_FUNCTION_ARROW: printf("SCAN_STACK_FUNCTION_ARROW"); break;               /**< arrow function expression */
+#endif /* ENABLED (JERRY_ES2015) */
+    case SCAN_STACK_SWITCH_BLOCK: printf("SCAN_STACK_SWITCH_BLOCK"); break;                 /**< block part of "switch" statement */
+    case SCAN_STACK_IF_STATEMENT: printf("SCAN_STACK_IF_STATEMENT"); break;                 /**< statement part of "if" statements */
+    case SCAN_STACK_WITH_STATEMENT: printf("SCAN_STACK_WITH_STATEMENT"); break;               /**< statement part of "with" statements */
+    case SCAN_STACK_WITH_EXPRESSION: printf("SCAN_STACK_WITH_EXPRESSION"); break;              /**< expression part of "with" statements */
+    case SCAN_STACK_DO_STATEMENT: printf("SCAN_STACK_DO_STATEMENT"); break;                 /**< statement part of "do" statements */
+    case SCAN_STACK_DO_EXPRESSION: printf("SCAN_STACK_DO_EXPRESSION"); break;                /**< expression part of "do" statements */
+    case SCAN_STACK_WHILE_EXPRESSION: printf("SCAN_STACK_WHILE_EXPRESSION"); break;             /**< expression part of "while" iterator */
+    case SCAN_STACK_PAREN_EXPRESSION: printf("SCAN_STACK_PAREN_EXPRESSION"); break;             /**< expression in brackets */
+    case SCAN_STACK_STATEMENT_WITH_EXPR: printf("SCAN_STACK_STATEMENT_WITH_EXPR"); break;          /**< statement which starts with expression enclosed in brackets */
+#if ENABLED (JERRY_ES2015)
+    case SCAN_STACK_BINDING_INIT: printf("SCAN_STACK_BINDING_INIT"); break;                 /**< post processing after a single initializer */
+    case SCAN_STACK_BINDING_LIST_INIT: printf("SCAN_STACK_BINDING_LIST_INIT"); break;            /**< post processing after an initializer list */
+    case SCAN_STACK_LET: printf("SCAN_STACK_LET"); break;                          /**< let statement */
+    case SCAN_STACK_CONST: printf("SCAN_STACK_CONST"); break;                        /**< const statement */
+#endif /* ENABLED (JERRY_ES2015) */
+    /* The SCANNER_IS_FOR_START macro needs to be updated when the following constants are reordered. */
+    case SCAN_STACK_VAR: printf("SCAN_STACK_VAR"); break;                          /**< var statement */
+    case SCAN_STACK_FOR_VAR_START: printf("SCAN_STACK_FOR_VAR_START"); break;                /**< start of "for" iterator with var statement */
+#if ENABLED (JERRY_ES2015)
+    case SCAN_STACK_FOR_LET_START: printf("SCAN_STACK_FOR_LET_START"); break;                /**< start of "for" iterator with let statement */
+    case SCAN_STACK_FOR_CONST_START: printf("SCAN_STACK_FOR_CONST_START"); break;              /**< start of "for" iterator with const statement */
+#endif /* ENABLED (JERRY_ES2015) */
+    case SCAN_STACK_FOR_START: printf("SCAN_STACK_FOR_START"); break;                    /**< start of "for" iterator */
+    case SCAN_STACK_FOR_CONDITION: printf("SCAN_STACK_FOR_CONDITION"); break;                /**< condition part of "for" iterator */
+    case SCAN_STACK_FOR_EXPRESSION: printf("SCAN_STACK_FOR_EXPRESSION"); break;               /**< expression part of "for" iterator */
+    case SCAN_STACK_SWITCH_EXPRESSION: printf("SCAN_STACK_SWITCH_EXPRESSION"); break;            /**< expression part of "switch" statement */
+    case SCAN_STACK_CASE_STATEMENT: printf("SCAN_STACK_CASE_STATEMENT"); break;               /**< case statement inside a switch statement */
+    case SCAN_STACK_COLON_EXPRESSION: printf("SCAN_STACK_COLON_EXPRESSION"); break;             /**< expression between a question mark and colon */
+    case SCAN_STACK_TRY_STATEMENT: printf("SCAN_STACK_TRY_STATEMENT"); break;                /**< try statement */
+    case SCAN_STACK_CATCH_STATEMENT: printf("SCAN_STACK_CATCH_STATEMENT"); break;              /**< catch statement */
+    case SCAN_STACK_ARRAY_LITERAL: printf("SCAN_STACK_ARRAY_LITERAL"); break;                /**< array literal or destructuring assignment or binding */
+    case SCAN_STACK_OBJECT_LITERAL: printf("SCAN_STACK_OBJECT_LITERAL"); break;               /**< object literal group */
+    case SCAN_STACK_PROPERTY_ACCESSOR: printf("SCAN_STACK_PROPERTY_ACCESSOR"); break;            /**< property accessor in square brackets */
+#if ENABLED (JERRY_ES2015)
+    /* These four must be in this order. */
+    case SCAN_STACK_COMPUTED_PROPERTY: printf("SCAN_STACK_COMPUTED_PROPERTY"); break;            /**< computed property name */
+    case SCAN_STACK_COMPUTED_GENERATOR: printf("SCAN_STACK_COMPUTED_GENERATOR"); break;           /**< computed generator function */
+    case SCAN_STACK_COMPUTED_ASYNC: printf("SCAN_STACK_COMPUTED_ASYNC"); break;               /**< computed async function */
+    case SCAN_STACK_COMPUTED_ASYNC_GENERATOR: printf("SCAN_STACK_COMPUTED_ASYNC_GENERATOR"); break;     /**< computed async function */
+    case SCAN_STACK_TEMPLATE_STRING: printf("SCAN_STACK_TEMPLATE_STRING"); break;              /**< template string */
+    case SCAN_STACK_TAGGED_TEMPLATE_LITERAL: printf("SCAN_STACK_TAGGED_TEMPLATE_LITERAL"); break;      /**< tagged template literal */
+    case SCAN_STACK_PRIVATE_BLOCK_EARLY: printf("SCAN_STACK_PRIVATE_BLOCK_EARLY"); break;          /**< private block for single statements (force early declarations) */
+    case SCAN_STACK_PRIVATE_BLOCK: printf("SCAN_STACK_PRIVATE_BLOCK"); break;                /**< private block for single statements */
+    case SCAN_STACK_ARROW_ARGUMENTS: printf("SCAN_STACK_ARROW_ARGUMENTS"); break;              /**< might be arguments of an arrow function */
+    case SCAN_STACK_ARROW_EXPRESSION: printf("SCAN_STACK_ARROW_EXPRESSION"); break;             /**< expression body of an arrow function */
+    case SCAN_STACK_EXPLICIT_CLASS_CONSTRUCTOR: printf("SCAN_STACK_EXPLICIT_CLASS_CONSTRUCTOR"); break;   /**< explicit class constructor */
+    case SCAN_STACK_IMPLICIT_CLASS_CONSTRUCTOR: printf("SCAN_STACK_IMPLICIT_CLASS_CONSTRUCTOR"); break;   /**< implicit class constructor */
+    case SCAN_STACK_CLASS_STATEMENT: printf("SCAN_STACK_CLASS_STATEMENT"); break;              /**< class statement */
+    case SCAN_STACK_CLASS_EXPRESSION: printf("SCAN_STACK_CLASS_EXPRESSION"); break;             /**< class expression */
+    case SCAN_STACK_CLASS_EXTENDS: printf("SCAN_STACK_CLASS_EXTENDS"); break;                /**< class extends expression */
+    case SCAN_STACK_FUNCTION_PARAMETERS: printf("SCAN_STACK_FUNCTION_PARAMETERS"); break;          /**< function parameter initializer */
+    case SCAN_STACK_USE_ASYNC: printf("SCAN_STACK_USE_ASYNC"); break;                    /**< an "async" identifier is used */
+#endif /* ENABLED (JERRY_ES2015) */
+  }
+  printf("\n");
+  fflush(stdout);
+}
+
+static void print_scan_mode(scan_modes_t val) {
+  switch (val) {
+  case SCAN_MODE_PRIMARY_EXPRESSION: printf("SCAN_MODE_PRIMARY_EXPRESSION"); break;
+  case SCAN_MODE_PRIMARY_EXPRESSION_AFTER_NEW: printf("SCAN_MODE_PRIMARY_EXPRESSION_AFTER_NEW"); break;
+  case SCAN_MODE_POST_PRIMARY_EXPRESSION: printf("SCAN_MODE_POST_PRIMARY_EXPRESSION"); break;
+  case SCAN_MODE_PRIMARY_EXPRESSION_END: printf("SCAN_MODE_PRIMARY_EXPRESSION_END"); break;
+  case SCAN_MODE_STATEMENT: printf("SCAN_MODE_STATEMENT"); break;
+  case SCAN_MODE_STATEMENT_OR_TERMINATOR: printf("SCAN_MODE_STATEMENT_OR_TERMINATOR"); break;
+  case SCAN_MODE_STATEMENT_END: printf("SCAN_MODE_STATEMENT_END"); break;
+  case SCAN_MODE_VAR_STATEMENT: printf("SCAN_MODE_VAR_STATEMENT"); break;
+  case SCAN_MODE_PROPERTY_NAME: printf("SCAN_MODE_PROPERTY_NAME"); break;
+  case SCAN_MODE_FUNCTION_ARGUMENTS: printf("SCAN_MODE_FUNCTION_ARGUMENTS"); break;
+#if ENABLED (JERRY_ES2015)
+  case SCAN_MODE_CONTINUE_FUNCTION_ARGUMENTS: printf("SCAN_MODE_CONTINUE_FUNCTION_ARGUMENTS"); break;
+  case SCAN_MODE_BINDING: printf("SCAN_MODE_BINDING"); break;
+  case SCAN_MODE_CLASS_DECLARATION: printf("SCAN_MODE_CLASS_DECLARATION"); break;
+  case SCAN_MODE_CLASS_METHOD: printf("SCAN_MODE_CLASS_METHOD"); break;
+#endif /* ENABLED (JERRY_ES2015) */
+  }
+  printf("\n");
+  fflush(stdout);
+}
+
 /**
  * Scan the whole source code.
  */
@@ -2349,6 +2441,12 @@ scanner_scan_all (parser_context_t *context_p, /**< context */
     {
       lexer_token_type_t type = (lexer_token_type_t) context_p->token.type;
       scan_stack_modes_t stack_top = (scan_stack_modes_t) context_p->stack_top_uint8;
+
+      print_lexer_token_type(type);
+      printf("stack top: ");
+      print_scan_stack_mode(stack_top);
+      printf("curr mode: ");
+      print_scan_mode(scanner_context.mode);
 
       switch (scanner_context.mode)
       {

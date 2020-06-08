@@ -271,6 +271,7 @@ parser_flush_cbc (parser_context_t *context_p) /**< context */
     JERRY_DEBUG_MSG ("\n");
   }
 #endif /* ENABLED (JERRY_PARSER_DUMP_BYTE_CODE) */
+  fflush(stdout);
 
   if (context_p->stack_depth > context_p->stack_limit)
   {

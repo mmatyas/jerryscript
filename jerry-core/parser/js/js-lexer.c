@@ -1426,6 +1426,156 @@ lexer_parse_number (parser_context_t *context_p) /**< context */
   }
 } /* lexer_parse_number */
 
+
+void print_lexer_token_type(lexer_token_type_t val) {
+  switch (val)
+  {
+    case LEXER_EOS: printf("LEXER_EOS"); break;
+
+    case LEXER_LITERAL: printf("LEXER_LITERAL"); break;
+    case LEXER_KEYW_THIS: printf("LEXER_KEYW_THIS"); break;
+    case LEXER_LIT_TRUE: printf("LEXER_LIT_TRUE"); break;
+    case LEXER_LIT_FALSE: printf("LEXER_LIT_FALSE"); break;
+    case LEXER_LIT_NULL: printf("LEXER_LIT_NULL"); break;
+  #if ENABLED (JERRY_ES2015)
+    case LEXER_TEMPLATE_LITERAL: printf("LEXER_TEMPLATE_LITERAL"); break;
+    case LEXER_THREE_DOTS: printf("LEXER_THREE_DOTS"); break;
+  #endif /* ENABLED (JERRY_ES2015) */
+
+    case LEXER_PLUS: printf("LEXER_PLUS"); break;
+    case LEXER_NEGATE: printf("LEXER_NEGATE"); break;
+    case LEXER_LOGICAL_NOT: printf("LEXER_LOGICAL_NOT"); break;
+    case LEXER_BIT_NOT: printf("LEXER_BIT_NOT"); break;
+    case LEXER_KEYW_VOID: printf("LEXER_KEYW_VOID"); break;
+    case LEXER_KEYW_TYPEOF: printf("LEXER_KEYW_TYPEOF"); break;
+  #if ENABLED (JERRY_ES2015)
+    case LEXER_KEYW_AWAIT: printf("LEXER_KEYW_AWAIT"); break;
+  #endif /* ENABLED (JERRY_ES2015) */
+    case LEXER_KEYW_DELETE: printf("LEXER_KEYW_DELETE"); break;
+    case LEXER_INCREASE: printf("LEXER_INCREASE"); break;
+    case LEXER_DECREASE: printf("LEXER_DECREASE"); break;
+
+    case LEXER_ASSIGN: printf("LEXER_ASSIGN"); break;
+    case LEXER_ASSIGN_ADD: printf("LEXER_ASSIGN_ADD"); break;
+    case LEXER_ASSIGN_SUBTRACT: printf("LEXER_ASSIGN_SUBTRACT"); break;
+    case LEXER_ASSIGN_MULTIPLY: printf("LEXER_ASSIGN_MULTIPLY"); break;
+    case LEXER_ASSIGN_DIVIDE: printf("LEXER_ASSIGN_DIVIDE"); break;
+    case LEXER_ASSIGN_MODULO: printf("LEXER_ASSIGN_MODULO"); break;
+  #if ENABLED (JERRY_ES2015)
+    case LEXER_ASSIGN_EXPONENTIATION: printf("LEXER_ASSIGN_EXPONENTIATION"); break;
+  #endif /* ENABLED (JERRY_ES2015) */
+    case LEXER_ASSIGN_LEFT_SHIFT: printf("LEXER_ASSIGN_LEFT_SHIFT"); break;
+    case LEXER_ASSIGN_RIGHT_SHIFT: printf("LEXER_ASSIGN_RIGHT_SHIFT"); break;
+    case LEXER_ASSIGN_UNS_RIGHT_SHIFT: printf("LEXER_ASSIGN_UNS_RIGHT_SHIFT"); break;
+    case LEXER_ASSIGN_BIT_AND: printf("LEXER_ASSIGN_BIT_AND"); break;
+    case LEXER_ASSIGN_BIT_OR: printf("LEXER_ASSIGN_BIT_OR"); break;
+    case LEXER_ASSIGN_BIT_XOR: printf("LEXER_ASSIGN_BIT_XOR"); break;
+    case LEXER_QUESTION_MARK: printf("LEXER_QUESTION_MARK"); break;
+    case LEXER_LOGICAL_OR: printf("LEXER_LOGICAL_OR"); break;
+    case LEXER_LOGICAL_AND: printf("LEXER_LOGICAL_AND"); break;
+    case LEXER_BIT_OR: printf("LEXER_BIT_OR"); break;
+    case LEXER_BIT_XOR: printf("LEXER_BIT_XOR"); break;
+    case LEXER_BIT_AND: printf("LEXER_BIT_AND"); break;
+    case LEXER_EQUAL: printf("LEXER_EQUAL"); break;
+    case LEXER_NOT_EQUAL: printf("LEXER_NOT_EQUAL"); break;
+    case LEXER_STRICT_EQUAL: printf("LEXER_STRICT_EQUAL"); break;
+    case LEXER_STRICT_NOT_EQUAL: printf("LEXER_STRICT_NOT_EQUAL"); break;
+    case LEXER_LESS: printf("LEXER_LESS"); break;
+    case LEXER_GREATER: printf("LEXER_GREATER"); break;
+    case LEXER_LESS_EQUAL: printf("LEXER_LESS_EQUAL"); break;
+    case LEXER_GREATER_EQUAL: printf("LEXER_GREATER_EQUAL"); break;
+    case LEXER_KEYW_IN: printf("LEXER_KEYW_IN"); break;
+    case LEXER_KEYW_INSTANCEOF: printf("LEXER_KEYW_INSTANCEOF"); break;
+    case LEXER_LEFT_SHIFT: printf("LEXER_LEFT_SHIFT"); break;
+    case LEXER_RIGHT_SHIFT: printf("LEXER_RIGHT_SHIFT"); break;
+    case LEXER_UNS_RIGHT_SHIFT: printf("LEXER_UNS_RIGHT_SHIFT"); break;
+    case LEXER_ADD: printf("LEXER_ADD"); break;
+    case LEXER_SUBTRACT: printf("LEXER_SUBTRACT"); break;
+    case LEXER_MULTIPLY: printf("LEXER_MULTIPLY"); break;
+    case LEXER_DIVIDE: printf("LEXER_DIVIDE"); break;
+    case LEXER_MODULO: printf("LEXER_MODULO"); break;
+  #if ENABLED (JERRY_ES2015)
+    case LEXER_EXPONENTIATION: printf("LEXER_EXPONENTIATION"); break;
+  #endif /* ENABLED (JERRY_ES2015) */
+
+    case LEXER_LEFT_BRACE: printf("LEXER_LEFT_BRACE"); break;
+    case LEXER_LEFT_PAREN: printf("LEXER_LEFT_PAREN"); break;
+    case LEXER_LEFT_SQUARE: printf("LEXER_LEFT_SQUARE"); break;
+    case LEXER_RIGHT_BRACE: printf("LEXER_RIGHT_BRACE"); break;
+    case LEXER_RIGHT_PAREN: printf("LEXER_RIGHT_PAREN"); break;
+    case LEXER_RIGHT_SQUARE: printf("LEXER_RIGHT_SQUARE"); break;
+    case LEXER_DOT: printf("LEXER_DOT"); break;
+    case LEXER_SEMICOLON: printf("LEXER_SEMICOLON"); break;
+    case LEXER_COLON: printf("LEXER_COLON"); break;
+    case LEXER_COMMA: printf("LEXER_COMMA"); break;
+  #if ENABLED (JERRY_ES2015)
+    case LEXER_ARROW: printf("LEXER_ARROW"); break;
+  #endif /* ENABLED (JERRY_ES2015) */
+
+    case LEXER_KEYW_BREAK: printf("LEXER_KEYW_BREAK"); break;
+    case LEXER_KEYW_DO: printf("LEXER_KEYW_DO"); break;
+    case LEXER_KEYW_CASE: printf("LEXER_KEYW_CASE"); break;
+    case LEXER_KEYW_ELSE: printf("LEXER_KEYW_ELSE"); break;
+    case LEXER_KEYW_NEW: printf("LEXER_KEYW_NEW"); break;
+    case LEXER_KEYW_VAR: printf("LEXER_KEYW_VAR"); break;
+    case LEXER_KEYW_CATCH: printf("LEXER_KEYW_CATCH"); break;
+    case LEXER_KEYW_FINALLY: printf("LEXER_KEYW_FINALLY"); break;
+    case LEXER_KEYW_RETURN: printf("LEXER_KEYW_RETURN"); break;
+    case LEXER_KEYW_CONTINUE: printf("LEXER_KEYW_CONTINUE"); break;
+    case LEXER_KEYW_FOR: printf("LEXER_KEYW_FOR"); break;
+    case LEXER_KEYW_SWITCH: printf("LEXER_KEYW_SWITCH"); break;
+    case LEXER_KEYW_WHILE: printf("LEXER_KEYW_WHILE"); break;
+    case LEXER_KEYW_DEBUGGER: printf("LEXER_KEYW_DEBUGGER"); break;
+    case LEXER_KEYW_FUNCTION: printf("LEXER_KEYW_FUNCTION"); break;
+    case LEXER_KEYW_WITH: printf("LEXER_KEYW_WITH"); break;
+    case LEXER_KEYW_DEFAULT: printf("LEXER_KEYW_DEFAULT"); break;
+    case LEXER_KEYW_IF: printf("LEXER_KEYW_IF"); break;
+    case LEXER_KEYW_THROW: printf("LEXER_KEYW_THROW"); break;
+    case LEXER_KEYW_TRY: printf("LEXER_KEYW_TRY"); break;
+
+    case LEXER_KEYW_CLASS: printf("LEXER_KEYW_CLASS"); break;
+    case LEXER_KEYW_EXTENDS: printf("LEXER_KEYW_EXTENDS"); break;
+    case LEXER_KEYW_SUPER: printf("LEXER_KEYW_SUPER"); break;
+    case LEXER_KEYW_CONST: printf("LEXER_KEYW_CONST"); break;
+    case LEXER_KEYW_EXPORT: printf("LEXER_KEYW_EXPORT"); break;
+    case LEXER_KEYW_IMPORT: printf("LEXER_KEYW_IMPORT"); break;
+    case LEXER_KEYW_ENUM: printf("LEXER_KEYW_ENUM"); break;
+
+    /* These are virtual tokens. */
+    case LEXER_EXPRESSION_START: printf("LEXER_EXPRESSION_START"); break;
+    case LEXER_PROPERTY_GETTER: printf("LEXER_PROPERTY_GETTER"); break;
+    case LEXER_PROPERTY_SETTER: printf("LEXER_PROPERTY_SETTER"); break;
+    case LEXER_COMMA_SEP_LIST: printf("LEXER_COMMA_SEP_LIST"); break;
+  #if ENABLED (JERRY_ES2015)
+    case LEXER_ASSIGN_GROUP_EXPR: printf("LEXER_ASSIGN_GROUP_EXPR"); break;
+    case LEXER_ASSIGN_CONST: printf("LEXER_ASSIGN_CONST"); break;
+    case LEXER_CLASS_CONSTRUCTOR: printf("LEXER_CLASS_CONSTRUCTOR"); break;
+    case LEXER_INVALID_PATTERN: printf("LEXER_INVALID_PATTERN"); break;
+  #endif /* ENABLED (JERRY_ES2015) */
+
+  #if ENABLED (JERRY_ES2015)
+    case LEXER_KEYW_ASYNC: printf("LEXER_KEYW_ASYNC"); break;
+  #endif /* ENABLED (JERRY_ES2015) */
+
+    case LEXER_KEYW_EVAL: printf("LEXER_KEYW_EVAL"); break;
+    case LEXER_KEYW_ARGUMENTS: printf("LEXER_KEYW_ARGUMENTS"); break;
+
+    case LEXER_KEYW_IMPLEMENTS: printf("LEXER_KEYW_IMPLEMENTS"); break;
+    case LEXER_KEYW_PRIVATE: printf("LEXER_KEYW_PRIVATE"); break;
+    case LEXER_KEYW_PUBLIC: printf("LEXER_KEYW_PUBLIC"); break;
+    case LEXER_KEYW_INTERFACE: printf("LEXER_KEYW_INTERFACE"); break;
+    case LEXER_KEYW_PACKAGE: printf("LEXER_KEYW_PACKAGE"); break;
+    case LEXER_KEYW_PROTECTED: printf("LEXER_KEYW_PROTECTED"); break;
+
+    case LEXER_KEYW_LET: printf("LEXER_KEYW_LET"); break;
+    case LEXER_KEYW_YIELD: printf("LEXER_KEYW_YIELD"); break;
+    case LEXER_KEYW_STATIC: printf("LEXER_KEYW_STATIC"); break;
+  }
+  printf("\n");
+  fflush(stdout);
+}
+
+
 /**
  * One character long token (e.g. comma).
  *

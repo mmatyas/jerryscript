@@ -1092,6 +1092,7 @@ scanner_filter_arguments (parser_context_t *context_p, /**< context */
   scanner_free (literal_pool_p, sizeof (scanner_literal_pool_t));
 } /* scanner_filter_arguments */
 
+
 /**
  * Add any literal to the specified literal pool.
  *

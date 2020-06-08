@@ -2426,6 +2426,7 @@ parser_parse_function (parser_context_t *context_p, /**< context */
     jerry_debugger_send_parse_function (context_p->token.line, context_p->token.column);
   }
 #endif /* ENABLED (JERRY_DEBUGGER) */
+  fflush(stdout);
 
   lexer_next_token (context_p);
 
