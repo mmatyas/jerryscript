@@ -1373,6 +1373,8 @@ parser_post_processing (parser_context_t *context_p) /**< context */
     opcode = (cbc_opcode_t) (*branch_mark_p);
     branch_offset_length = CBC_BRANCH_OFFSET_LENGTH (opcode);
 
+    printf("%d\n", opcode); fflush(stdout);
+
     if (opcode == CBC_JUMP_FORWARD)
     {
       /* These opcodes are deleted from the stream. */

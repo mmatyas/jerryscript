@@ -114,6 +114,7 @@ typedef enum
   SCAN_STACK_CLASS_EXPRESSION,             /**< class expression */
   SCAN_STACK_CLASS_EXTENDS,                /**< class extends expression */
   SCAN_STACK_FUNCTION_PARAMETERS,          /**< function parameter initializer */
+  SCAN_STACK_FUNCTION_LENGTH,              /**< function length value initializer */
   SCAN_STACK_USE_ASYNC,                    /**< an "async" identifier is used */
 #endif /* ENABLED (JERRY_ES2015) */
 } scan_stack_modes_t;
@@ -382,6 +383,8 @@ void scanner_push_destructuring_pattern (parser_context_t *context_p, scanner_co
                                          uint8_t binding_type, bool is_nested);
 void scanner_pop_binding_list (scanner_context_t *scanner_context_p);
 void scanner_append_hole (parser_context_t *context_p, scanner_context_t *scanner_context_p);
+void scanner_push_function_args_declaration (parser_context_t *context_p, scanner_context_t *scanner_context_p,
+                                             uint8_t stack_mode);
 #endif /* ENABLED (JERRY_ES2015) */
 
 /* Scanner operations. */

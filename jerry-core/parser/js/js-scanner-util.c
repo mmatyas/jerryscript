@@ -1454,6 +1454,28 @@ scanner_push_class_declaration (parser_context_t *context_p, /**< context */
 } /* scanner_push_class_declaration */
 
 /**
+ * Push the values required for function length parsing.
+ */
+void
+scanner_push_function_args_declaration (parser_context_t *context_p, /**< context */
+                                        scanner_context_t *scanner_context_p, /* scanner context */
+                                        uint8_t stack_mode) /**< stack mode */
+{
+  JERRY_ASSERT (context_p->token.type == LEXER_LEFT_PAREN);
+  JERRY_ASSERT (scanner_context_p->mode == SCAN_MODE_FUNCTION_ARGUMENTS);
+
+  parser_stack_push_uint8 (context_p, stack_mode);
+  scanner_source_start_t source_start;
+  source_start.source_p = context_p->source_p;
+
+  parser_stack_push (context_p, &source_start, sizeof (scanner_source_start_t));
+  parser_stack_push_uint8 (context_p, SCAN_STACK_FUNCTION_LENGTH);
+  scanner_context_p->mode = SCAN_MODE_CONTINUE_FUNCTION_ARGUMENTS;
+
+  lexer_next_token (context_p);
+} /* scanner_push_class_declaration */
+
+/**
  * Push the values required for destructuring assignment or binding parsing.
  */
 void

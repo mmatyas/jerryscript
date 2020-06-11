@@ -48,6 +48,7 @@ typedef enum
   SCANNER_TYPE_INITIALIZER, /**< destructuring binding or assignment pattern with initializer */
   SCANNER_TYPE_CLASS_CONSTRUCTOR, /**< class constructor */
   SCANNER_TYPE_LET_EXPRESSION, /**< let expression */
+  SCANNER_TYPE_FUNCTION_LENGTH, /**< calculated function length property */
   SCANNER_TYPE_ERR_REDECLARED, /**< syntax error: a variable is redeclared */
   SCANNER_TYPE_ERR_ASYNC_FUNCTION, /**< an invalid async function follows */
 #endif /* ENABLED (JERRY_ES2015) */

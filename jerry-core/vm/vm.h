@@ -255,6 +255,7 @@ typedef enum
   VM_OC_RESOLVE_LEXICAL_THIS,    /**< resolve this_binding from from the lexical environment */
   VM_OC_SUPER_REFERENCE,         /**< push super reference */
   VM_OC_SET_FUNCTION_NAME,       /**< set function name property */
+  VM_OC_SET_FUNCTION_LENGTH,     /**< set function length property */
 
   VM_OC_PUSH_SPREAD_ELEMENT,     /**< push spread element */
   VM_OC_GET_ITERATOR,            /**< GetIterator abstract operation */

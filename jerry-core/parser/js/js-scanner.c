@@ -2121,6 +2121,11 @@ scanner_scan_statement_end (parser_context_t *context_p, /**< context */
         scanner_pop_literal_pool (context_p, scanner_context_p);
         continue;
       }
+      case SCAN_STACK_FUNCTION_LENGTH:
+      {
+        parser_stack_pop_uint8 (context_p);
+        continue;
+      }
 #endif /* ENABLED (JERRY_ES2015) */
       default:
       {
@@ -2312,6 +2317,7 @@ static void print_scan_stack_mode(scan_stack_modes_t val) {
     case SCAN_STACK_CLASS_EXPRESSION: printf("SCAN_STACK_CLASS_EXPRESSION"); break;             /**< class expression */
     case SCAN_STACK_CLASS_EXTENDS: printf("SCAN_STACK_CLASS_EXTENDS"); break;                /**< class extends expression */
     case SCAN_STACK_FUNCTION_PARAMETERS: printf("SCAN_STACK_FUNCTION_PARAMETERS"); break;          /**< function parameter initializer */
+    case SCAN_STACK_FUNCTION_LENGTH: printf("SCAN_STACK_FUNCTION_LENGTH"); break;          /**< function parameter initializer */
     case SCAN_STACK_USE_ASYNC: printf("SCAN_STACK_USE_ASYNC"); break;                    /**< an "async" identifier is used */
 #endif /* ENABLED (JERRY_ES2015) */
   }
@@ -2801,6 +2807,9 @@ scanner_scan_all (parser_context_t *context_p, /**< context */
         }
         case SCAN_MODE_FUNCTION_ARGUMENTS:
         {
+
+
+
           JERRY_ASSERT (stack_top == SCAN_STACK_SCRIPT_FUNCTION
                         || stack_top == SCAN_STACK_FUNCTION_STATEMENT
                         || stack_top == SCAN_STACK_FUNCTION_EXPRESSION
@@ -2825,8 +2834,8 @@ scanner_scan_all (parser_context_t *context_p, /**< context */
           {
             scanner_raise_error (context_p);
           }
-          lexer_next_token (context_p);
 
+          scanner_push_function_args_declaration (context_p, &scanner_context, SCAN_STACK_CLASS_STATEMENT);
 #if ENABLED (JERRY_ES2015)
           /* FALLTHRU */
         }
@@ -2900,6 +2909,18 @@ scanner_scan_all (parser_context_t *context_p, /**< context */
 
             if (context_p->token.type == LEXER_ASSIGN)
             {
+              if (stack_top == SCAN_STACK_FUNCTION_LENGTH)
+              {
+                scanner_source_start_t source_start;
+                parser_stack_pop_uint8 (context_p);
+                parser_stack_pop (context_p, &source_start, sizeof (scanner_source_start_t));
+
+                scanner_info_t *info_p = scanner_insert_info (context_p, source_start.source_p, sizeof (scanner_info_t));
+                info_p->type = SCANNER_TYPE_FUNCTION_LENGTH;
+                info_p->u8_arg = 0;
+                parser_stack_push_uint8 (context_p, SCAN_STACK_FUNCTION_LENGTH);
+              }
+
               scanner_context.active_literal_pool_p->status_flags |= SCANNER_LITERAL_POOL_ARGUMENTS_UNMAPPED;
 
               parser_stack_push_uint8 (context_p, SCAN_STACK_FUNCTION_PARAMETERS);

@@ -1854,6 +1854,11 @@ vm_loop (vm_frame_ctx_t *frame_ctx_p) /**< frame context */
 
           goto free_left_value;
         }
+        case VM_OC_SET_FUNCTION_LENGTH:
+        {
+          printf("Hello!\n"); fflush(stdout);
+          continue;
+        }
         case VM_OC_SET_FUNCTION_NAME:
         {
           char *prefix_p = NULL;
