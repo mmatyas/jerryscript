@@ -2835,7 +2835,8 @@ scanner_scan_all (parser_context_t *context_p, /**< context */
             scanner_raise_error (context_p);
           }
 
-          scanner_push_function_args_declaration (context_p, &scanner_context, SCAN_STACK_CLASS_STATEMENT);
+          scanner_push_function_args_declaration (context_p, &scanner_context, stack_top);
+          lexer_next_token (context_p);
 #if ENABLED (JERRY_ES2015)
           /* FALLTHRU */
         }
@@ -2909,7 +2910,7 @@ scanner_scan_all (parser_context_t *context_p, /**< context */
 
             if (context_p->token.type == LEXER_ASSIGN)
             {
-              if (stack_top == SCAN_STACK_FUNCTION_LENGTH)
+              if (context_p->stack_top_uint8 == SCAN_STACK_FUNCTION_LENGTH)
               {
                 scanner_source_start_t source_start;
                 parser_stack_pop_uint8 (context_p);
@@ -2917,8 +2918,8 @@ scanner_scan_all (parser_context_t *context_p, /**< context */
 
                 scanner_info_t *info_p = scanner_insert_info (context_p, source_start.source_p, sizeof (scanner_info_t));
                 info_p->type = SCANNER_TYPE_FUNCTION_LENGTH;
-                info_p->u8_arg = 0;
-                parser_stack_push_uint8 (context_p, SCAN_STACK_FUNCTION_LENGTH);
+                info_p->u8_arg = 42;
+                // parser_stack_push_uint8 (context_p, SCAN_STACK_FUNCTION_LENGTH);
               }
 
               scanner_context.active_literal_pool_p->status_flags |= SCANNER_LITERAL_POOL_ARGUMENTS_UNMAPPED;
@@ -3259,6 +3260,8 @@ scanner_scan_all (parser_context_t *context_p, /**< context */
     }
 
 scan_completed:
+    printf("\n\n****\nSCAN COMPLETE\n****\n"); fflush(stdout);
+
     if (context_p->stack_top_uint8 != SCAN_STACK_SCRIPT
         && context_p->stack_top_uint8 != SCAN_STACK_SCRIPT_FUNCTION)
     {

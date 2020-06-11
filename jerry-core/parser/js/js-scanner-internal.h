@@ -384,7 +384,7 @@ void scanner_push_destructuring_pattern (parser_context_t *context_p, scanner_co
 void scanner_pop_binding_list (scanner_context_t *scanner_context_p);
 void scanner_append_hole (parser_context_t *context_p, scanner_context_t *scanner_context_p);
 void scanner_push_function_args_declaration (parser_context_t *context_p, scanner_context_t *scanner_context_p,
-                                             uint8_t stack_mode);
+                                             scan_stack_modes_t stack_top);
 #endif /* ENABLED (JERRY_ES2015) */
 
 /* Scanner operations. */
